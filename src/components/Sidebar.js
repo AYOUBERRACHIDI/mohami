@@ -1,8 +1,10 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { HomeIcon, DocumentTextIcon, UserIcon, ChartBarIcon, CalendarIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import { FaClock } from 'react-icons/fa';
 import styled, { keyframes, css } from 'styled-components';
 import logo from '../assets/logo1.jpeg';
+import { UserPlusIcon } from 'lucide-react';
 
 // Keyframes for Animations
 const fadeIn = keyframes`
@@ -31,10 +33,10 @@ const pulse = keyframes`
 // Styled Components
 const SidebarContainer = styled.div`
   position: fixed;
-  top: 60px; /* Start below the NavDash (height: 60px) */
+  top: 60px;
   bottom: 0;
   right: 0;
-  height: calc(100vh - 60px); /* Adjust height to account for NavDash */
+  height: calc(100vh - 60px);
   width: 70px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
@@ -107,20 +109,22 @@ const Tooltip = styled.div`
 `;
 
 const LogoutLink = styled(NavLink)`
-  margin-top: auto; /* Push logout icon to the bottom */
+  margin-top: auto;
 `;
 
-function Sidebar() {
+function Sidebar({ setToken }) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = path => location.pathname === path;
 
   const handleLogout = () => {
-    // Add logout logic here (e.g., clear token, redirect to home)
     console.log('User logged out');
-    // Clear token (example)
     localStorage.removeItem('token');
-    // Redirect to home (handled by Link to="/")
+    if (typeof setToken === 'function') {
+      setToken('');
+    }
+    navigate('/login');
   };
 
   return (
@@ -138,14 +142,23 @@ function Sidebar() {
         <UserIcon />
         <Tooltip>إدارة العملاء</Tooltip>
       </NavLink>
-      <NavLink to="/analytics" isActive={isActive('/analytics')}>
+      <NavLink to="/payment-management" isActive={isActive('/payment-management')}>
         <ChartBarIcon />
-        <Tooltip>التحليلات</Tooltip>
+        <Tooltip>إدارة المدفوعات</Tooltip>
       </NavLink>
       <NavLink to="/calendar" isActive={isActive('/calendar')}>
         <CalendarIcon />
         <Tooltip>التقويم</Tooltip>
       </NavLink>
+      <NavLink to="/sessions" isActive={isActive('/sessions')}>
+        <FaClock />
+        <Tooltip>إدارة الجلسات</Tooltip>
+      </NavLink>
+      <NavLink to="/secretary-management" isActive={isActive('/secretary-management')}>
+        <UserPlusIcon />
+        <Tooltip>إدارة السكرتارية</Tooltip>
+      </NavLink>
+      
       <LogoutLink to="/" onClick={handleLogout}>
         <ArrowRightOnRectangleIcon />
         <Tooltip>تسجيل الخروج</Tooltip>

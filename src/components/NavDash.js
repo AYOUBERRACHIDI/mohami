@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import { BellIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 // Keyframes for Animations
 const fadeIn = keyframes`
@@ -129,7 +131,7 @@ const DropdownMenu = styled.div`
   backdrop-filter: blur(10px);
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  display: none;
+  display: ${props => (props.isOpen ? 'block' : 'none')};
   animation: ${css`${dropdownFade} 0.3s ease-in-out forwards`};
 `;
 
@@ -138,6 +140,7 @@ const DropdownItem = styled.div`
   color: #2e7d32;
   font-size: 0.9rem;
   transition: background 0.3s ease-in-out;
+  cursor: pointer;
 
   &:hover {
     background: rgba(46, 125, 50, 0.1);
@@ -146,14 +149,66 @@ const DropdownItem = styled.div`
 
 function NavDash() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [userName, setUserName] = useState('جارٍ التحميل...');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setUserName('غير معروف');
+          toast.error('يرجى تسجيل الدخول أولاً');
+          navigate('/login');
+          return;
+        }
+
+        const response = await fetch('http://localhost:5000/api/avocats/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error(`Fetch error: Status ${response.status}, Message: ${errorData.error || 'No error message'}`);
+          throw new Error(errorData.error || 'Failed to fetch user');
+        }
+
+        const data = await response.json();
+        setUserName(`${data.nom} ${data.prenom}`);
+      } catch (error) {
+        console.error('Error fetching user name:', error);
+        setUserName('غير معروف');
+        toast.error('خطأ في جلب بيانات المستخدم: ' + error.message);
+        if (error.message.includes('Invalid token') || error.message.includes('No token provided') || error.message.includes('Avocat not found')) {
+          localStorage.removeItem('token');
+          navigate('/login');
+        }
+      }
+    };
+
+    fetchUserName();
+  }, [navigate]);
 
   const handleDropdownToggle = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
+  const handleProfileClick = () => {
+    setIsDropdownOpen(false);
+    navigate('/profile');
+  };
+
+  const handleSettingsClick = () => {
+    setIsDropdownOpen(false);
+    navigate('/settings');
+  };
+
   const handleLogout = () => {
-    // Add logout logic here (e.g., clear token, redirect to login)
-    console.log('User logged out');
+    localStorage.removeItem('token');
+    navigate('/login');
   };
 
   return (
@@ -165,9 +220,10 @@ function NavDash() {
         </NotificationIcon>
         <UserProfile onClick={handleDropdownToggle}>
           <UserCircleIcon />
-          <UserName>أحمد الصغير</UserName>
-          <DropdownMenu style={{ display: isDropdownOpen ? 'block' : 'none' }}>
-            <DropdownItem>الإعدادات</DropdownItem>
+          <UserName>{userName}</UserName>
+          <DropdownMenu isOpen={isDropdownOpen}>
+            <DropdownItem onClick={handleProfileClick}>الملف الشخصي</DropdownItem>
+            {/* <DropdownItem onClick={handleSettingsClick}>الإعدادات</DropdownItem> */}
             <DropdownItem onClick={handleLogout}>تسجيل الخروج</DropdownItem>
           </DropdownMenu>
         </UserProfile>

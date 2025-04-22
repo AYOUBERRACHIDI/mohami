@@ -1,724 +1,1617 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import styled, { keyframes, css } from 'styled-components';
+// import React, { useState, useEffect } from 'react';
+// import styled from 'styled-components';
+// import { FaEye, FaEdit, FaTrash, FaDownload, FaTimes } from 'react-icons/fa';
+// import { Eye, Pencil, Trash2, Plus, X, Search, Download, Calendar, User, FileText, Paperclip, Download as DownloadIcon } from 'lucide-react';
+// import { Link } from 'react-router-dom';
+// import axios from 'axios';
+// import { motion, AnimatePresence } from 'framer-motion';
+// import { jwtDecode } from 'jwt-decode';
+// import toast, { Toaster } from 'react-hot-toast';
+// import Sidebar from '../components/Sidebar';
+// import NavDash from '../components/NavDash';
+
+// // Theme for consistent colors
+// const theme = {
+//   primary: '#2e7d32',
+//   primaryDark: '#059669',
+//   error: '#ef4444',
+// };
+
+// // Styled Action Button for consistency with PaymentManagement.jsx
+// const ActionIcon = styled.button`
+//   padding: 0.5rem;
+//   background: ${props => props.bgColor};
+//   color: white;
+//   border-radius: 0.375rem;
+//   font-size: 0.875rem;
+//   transition: all 0.2s ease;
+//   position: relative;
+
+//   &:hover {
+//     background: ${props => props.hoverColor};
+//     transform: translateY(-1px);
+//   }
+
+//   &:hover:after {
+//     content: attr(title);
+//     position: absolute;
+//     top: -2rem;
+//     left: 50%;
+//     transform: translateX(-50%);
+//     background: ${theme.textPrimary};
+//     color: white;
+//     padding: 0.25rem 0.5rem;
+//     border-radius: 0.25rem;
+//     font-size: 0.75rem;
+//     white-space: nowrap;
+//   }
+// `;
+
+// const API_URL = 'http://localhost:5000/api/affaires';
+// const LAWYERS_API_URL = 'http://localhost:5000/api/avocats';
+// const TYPES_API_URL = 'http://localhost:5000/api/types';
+// const CLIENTS_API_URL = 'http://localhost:5000/api/clients';
+
+// const LegalCaseManagement = ({ setToken }) => {
+//   const [showFormModal, setShowFormModal] = useState(false);
+//   const [showDetailsModal, setShowDetailsModal] = useState(false);
+//   const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
+//   const [cases, setCases] = useState([]);
+//   const [filteredCases, setFilteredCases] = useState([]);
+//   const [selectedCase, setSelectedCase] = useState(null);
+//   const [searchQuery, setSearchQuery] = useState('');
+//   const [filterStatus, setFilterStatus] = useState('');
+//   const [filterDate, setFilterDate] = useState('');
+//   const [sortConfig, setSortConfig] = useState({ key: '', direction: 'asc' });
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const [selectedCases, setSelectedCases] = useState([]);
+//   const [formData, setFormData] = useState({
+//     titre: '',
+//     description: '',
+//     type_id: '',
+//     avocat_id: '',
+//     client_id: '',
+//     adversaire: '',
+//     statut: 'en cours',
+//     attachments: [],
+//   });
+//   const [attachmentFiles, setAttachmentFiles] = useState([]);
+//   const [editingId, setEditingId] = useState(null);
+//   const [error, setError] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [lawyers, setLawyers] = useState([]);
+//   const [types, setTypes] = useState([]);
+//   const [clients, setClients] = useState([]);
+//   const [loadingLawyers, setLoadingLawyers] = useState(true);
+//   const [loadingTypes, setLoadingTypes] = useState(true);
+//   const [loadingClients, setLoadingClients] = useState(true);
+//   const [avocatId, setAvocatId] = useState(null);
+//   const casesPerPage = 5;
+
+//   const statutDisplay = {
+//     'en cours': 'جارية',
+//     terminée: 'منتهية',
+//   };
+
+//   useEffect(() => {
+//     const token = localStorage.getItem('token');
+//     if (token) {
+//       try {
+//         const decoded = jwtDecode(token);
+//         setAvocatId(decoded.id);
+//       } catch (err) {
+//         console.error('Error decoding token:', err);
+//         setError('فشل التحقق من المصادقة');
+//       }
+//     } else {
+//       setError('لم يتم العثور على رمز المصادقة');
+//     }
+//   }, []);
+
+//   useEffect(() => {
+//     if (avocatId) {
+//       fetchCases();
+//       fetchClients();
+//     }
+//     fetchLawyers();
+//     fetchTypes();
+//   }, [avocatId]);
+
+//   const fetchCases = async () => {
+//     if (!avocatId) return;
+//     try {
+//       setLoading(true);
+//       const response = await axios.get(`${API_URL}/avocat/${avocatId}`, {
+//         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+//       });
+//       setCases(response.data);
+//       setFilteredCases(response.data);
+//     } catch (error) {
+//       if (error.response?.status === 404) {
+//         setCases([]);
+//         setFilteredCases([]);
+//       } else {
+//         setError('فشل جلب القضايا');
+//         console.error('Fetch cases error:', error.response?.data);
+//       }
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const fetchLawyers = async () => {
+//     try {
+//       setLoadingLawyers(true);
+//       const response = await axios.get(LAWYERS_API_URL, {
+//         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+//       });
+//       setLawyers(response.data);
+//     } catch (error) {
+//       setError('فشل جلب بيانات المحامين');
+//       console.error('Fetch lawyers error:', error.response?.data);
+//     } finally {
+//       setLoadingLawyers(false);
+//     }
+//   };
+
+//   const fetchTypes = async () => {
+//     try {
+//       setLoadingTypes(true);
+//       const response = await axios.get(TYPES_API_URL, {
+//         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+//       });
+//       setTypes(response.data);
+//     } catch (error) {
+//       setError('فشل جلب أنواع القضايا');
+//       console.error('Fetch types error:', error.response?.data);
+//     } finally {
+//       setLoadingTypes(false);
+//     }
+//   };
+
+//   const fetchClients = async () => {
+//     try {
+//       setLoadingClients(true);
+//       const response = await axios.get(CLIENTS_API_URL, {
+//         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+//       });
+//       setClients(response.data);
+//     } catch (error) {
+//       setError('فشل جلب بيانات العملاء');
+//       console.error('Fetch clients error:', error.response?.data);
+//     } finally {
+//       setLoadingClients(false);
+//     }
+//   };
+
+//   const handleFilter = () => {
+//     let filtered = cases;
+//     if (searchQuery) {
+//       filtered = filtered.filter(
+//         (c) =>
+//           c.titre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+//           c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+//           c.client_id?.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+//           c.adversaire?.toLowerCase().includes(searchQuery.toLowerCase())
+//       );
+//     }
+//     if (filterStatus) {
+//       filtered = filtered.filter((c) => c.statut === filterStatus);
+//     }
+//     if (filterDate) {
+//       const selectedDate = new Date(filterDate);
+//       selectedDate.setHours(0, 0, 0, 0);
+//       filtered = filtered.filter((c) => {
+//         const creationDate = new Date(c.date_creation);
+//         creationDate.setHours(0, 0, 0, 0);
+//         return (
+//           creationDate.getFullYear() === selectedDate.getFullYear() &&
+//           creationDate.getMonth() === selectedDate.getMonth() &&
+//           creationDate.getDate() === selectedDate.getDate()
+//         );
+//       });
+//     }
+//     setFilteredCases(filtered);
+//     setCurrentPage(1);
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     if (!formData.titre || !formData.description || !formData.type_id || !formData.client_id || !formData.adversaire) {
+//       setError('جميع الحقول مطلوبة');
+//       toast.error('جميع الحقول مطلوبة');
+//       return;
+//     }
+//     const submitData = new FormData();
+//     submitData.append('titre', formData.titre);
+//     submitData.append('description', formData.description);
+//     submitData.append('type_id', formData.type_id);
+//     submitData.append('avocat_id', avocatId);
+//     submitData.append('client_id', formData.client_id);
+//     submitData.append('adversaire', formData.adversaire);
+//     submitData.append('statut', formData.statut);
+//     attachmentFiles.forEach((file) => {
+//       submitData.append('attachments', file);
+//     });
+
+//     try {
+//       let response;
+//       if (editingId) {
+//         response = await axios.put(`${API_URL}/${editingId}`, submitData, {
+//           headers: {
+//             Authorization: `Bearer ${localStorage.getItem('token')}`,
+//             'Content-Type': 'multipart/form-data',
+//           },
+//         });
+//         setCases(cases.map((c) => (c._id === editingId ? response.data : c)));
+//         setEditingId(null);
+//         toast.success('تم تعديل القضية بنجاح');
+//       } else {
+//         response = await axios.post(API_URL, submitData, {
+//           headers: {
+//             Authorization: `Bearer ${localStorage.getItem('token')}`,
+//             'Content-Type': 'multipart/form-data',
+//           },
+//         });
+//         setCases([...cases, response.data]);
+//         toast.success('تم إضافة القضية بنجاح');
+//       }
+//       setFormData({ titre: '', description: '', type_id: '', avocat_id: '', client_id: '', adversaire: '', statut: 'en cours', attachments: [] });
+//       setAttachmentFiles([]);
+//       setShowFormModal(false);
+//       fetchCases();
+//       setError(null);
+//     } catch (error) {
+//       setError(error.response?.data?.message || 'حدث خطأ أثناء حفظ القضية');
+//       toast.error(error.response?.data?.message || 'حدث خطأ أثناء حفظ القضية');
+//     }
+//   };
+
+//   const handleEdit = (caseItem) => {
+//     setFormData({
+//       titre: caseItem.titre,
+//       description: caseItem.description,
+//       type_id: caseItem.type_id._id,
+//       avocat_id: caseItem.avocat_id._id,
+//       client_id: caseItem.client_id?._id || '',
+//       adversaire: caseItem.adversaire || '',
+//       statut: caseItem.statut,
+//       attachments: caseItem.attachments || [],
+//     });
+//     setAttachmentFiles([]);
+//     setEditingId(caseItem._id);
+//     setShowFormModal(true);
+//   };
+
+//   const handleDelete = async (id) => {
+//     if (window.confirm('هل أنت متأكد من حذف هذه القضية؟')) {
+//       try {
+//         await axios.delete(`${API_URL}/${id}`, {
+//           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+//         });
+//         setCases(cases.filter((c) => c._id !== id));
+//         setFilteredCases(filteredCases.filter((c) => c._id !== id));
+//         setSelectedCases(selectedCases.filter((c) => c !== id));
+//         setError(null);
+//         toast.success('تم حذف القضية بنجاح');
+//       } catch (error) {
+//         setError('فشل حذف القضية');
+//         toast.error('فشل حذف القضية');
+//       }
+//     }
+//   };
+
+//   const handleBulkDelete = async () => {
+//     if (window.confirm('هل أنت متأكد من حذف القضايا المحددة؟')) {
+//       try {
+//         await Promise.all(
+//           selectedCases.map((id) =>
+//             axios.delete(`${API_URL}/${id}`, {
+//               headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+//             })
+//           )
+//         );
+//         setCases(cases.filter((c) => !selectedCases.includes(c._id)));
+//         setFilteredCases(filteredCases.filter((c) => !selectedCases.includes(c._id)));
+//         setSelectedCases([]);
+//         setError(null);
+//         toast.success('تم حذف القضايا المحددة بنجاح');
+//       } catch (error) {
+//         setError('فشل حذف القضايا');
+//         toast.error('فشل حذف القضايا');
+//       }
+//     }
+//   };
+
+//   const handleExport = () => {
+//     const csvContent = [
+//       'العنوان,الوصف,الحالة,المحامي,العميل,الخصم,تاريخ الإنشاء,عدد المرفقات',
+//       ...cases.map((row) =>
+//         [
+//           row.titre,
+//           row.description,
+//           statutDisplay[row.statut] || row.statut,
+//           `${row.avocat_id?.nom || ''} ${row.avocat_id?.prenom || ''}`,
+//           row.client_id?.nom || '',
+//           row.adversaire || '',
+//           new Date(row.date_creation).toLocaleDateString('ar-EG'),
+//           row.attachments ? row.attachments.length : 0,
+//         ].join(',')
+//       ),
+//     ].join('\n');
+//     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+//     const url = URL.createObjectURL(blob);
+//     const link = document.createElement('a');
+//     link.setAttribute('href', url);
+//     link.setAttribute('download', 'cases.csv');
+//     link.click();
+//     URL.revokeObjectURL(url);
+//   };
+
+//   const handleSort = (key) => {
+//     const direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
+//     setSortConfig({ key, direction });
+//     const sorted = [...filteredCases].sort((a, b) => {
+//       let aValue = a[key];
+//       let bValue = b[key];
+//       if (key === 'avocat_id') {
+//         aValue = `${a.avocat_id?.nom || ''} ${a.avocat_id?.prenom || ''}`;
+//         bValue = `${b.avocat_id?.nom || ''} ${b.avocat_id?.prenom || ''}`;
+//       } else if (key === 'type_id') {
+//         aValue = a.type_id?.name || '';
+//         bValue = b.type_id?.name || '';
+//       } else if (key === 'client_id') {
+//         aValue = a.client_id?.nom || '';
+//         bValue = b.client_id?.nom || '';
+//       } else if (key === 'adversaire') {
+//         aValue = a.adversaire || '';
+//         bValue = b.adversaire || '';
+//       } else if (key === 'date_creation') {
+//         aValue = new Date(aValue);
+//         bValue = new Date(bValue);
+//       }
+//       if (typeof aValue === 'string' && key !== 'date_creation') {
+//         return direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+//       }
+//       return direction === 'asc' ? aValue - bValue : bValue - aValue;
+//     });
+//     setFilteredCases(sorted);
+//   };
+
+//   const handleFileChange = (e) => {
+//     const files = Array.from(e.target.files);
+//     setAttachmentFiles(files);
+//   };
+
+//   const handleAttachmentsModal = (caseItem) => {
+//     setSelectedCase(caseItem);
+//     setAttachmentFiles([]);
+//     setShowAttachmentsModal(true);
+//   };
+
+//   const handleAddAttachments = async (e) => {
+//     e.preventDefault();
+//     if (attachmentFiles.length === 0) {
+//       setError('يرجى اختيار ملفات لإضافتها');
+//       toast.error('يرجى اختيار ملفات لإضافتها');
+//       return;
+//     }
+//     const submitData = new FormData();
+//     attachmentFiles.forEach((file) => {
+//       submitData.append('attachments', file);
+//     });
+//     try {
+//       const response = await axios.put(`${API_URL}/${selectedCase._id}`, submitData, {
+//         headers: {
+//           Authorization: `Bearer ${localStorage.getItem('token')}`,
+//           'Content-Type': 'multipart/form-data',
+//         },
+//       });
+//       setCases(cases.map((c) => (c._id === selectedCase._id ? response.data : c)));
+//       setFilteredCases(filteredCases.map((c) => (c._id === selectedCase._id ? response.data : c)));
+//       setShowAttachmentsModal(false);
+//       setAttachmentFiles([]);
+//       setError(null);
+//       toast.success('تم إضافة المرفقات بنجاح');
+//     } catch (error) {
+//       setError(error.response?.data?.message || 'حدث خطأ أثناء إضافة المرفقات');
+//       toast.error(error.response?.data?.message || 'حدث خطأ أثناء إضافة المرفقات');
+//     }
+//   };
+
+//   const handleDownloadAttachment = async (filePath) => {
+//     if (typeof filePath !== 'string') {
+//       console.error('Invalid filePath:', filePath);
+//       setError('مسار الملف غير صالح');
+//       toast.error('مسار الملف غير صالح');
+//       return;
+//     }
+//     try {
+//       const encodedFilePath = encodeURIComponent(filePath);
+//       const response = await axios.get(`http://localhost:5000/api/affaires/download/${encodedFilePath}`, {
+//         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+//         responseType: 'blob',
+//       });
+//       const url = window.URL.createObjectURL(new Blob([response.data]));
+//       const link = document.createElement('a');
+//       link.href = url;
+//       link.setAttribute('download', filePath.split('/').pop());
+//       document.body.appendChild(link);
+//       link.click();
+//       document.body.removeChild(link);
+//       window.URL.revokeObjectURL(url);
+//     } catch (error) {
+//       console.error('Error downloading file:', error);
+//       setError('فشل تحميل الملف');
+//       toast.error('فشل تحميل الملف');
+//     }
+//   };
+
+//   const getFileName = (filePath) => {
+//     if (typeof filePath === 'string') {
+//       return filePath.split('/').pop() || 'ملف غير صالح';
+//     }
+//     return 'ملف غير صالح';
+//   };
+
+//   const totalPages = Math.ceil(filteredCases.length / casesPerPage);
+//   const paginatedCases = filteredCases.slice(
+//     (currentPage - 1) * casesPerPage,
+//     currentPage * casesPerPage
+//   );
+
+//   const summary = {
+//     total: cases.length,
+//     inProgress: cases.filter((c) => c.statut === 'en cours').length,
+//     closed: cases.filter((c) => c.statut === 'terminée').length,
+//   };
+
+//   if (loading || loadingClients) {
+//     return (
+//       <div className="flex justify-center items-center min-h-screen bg-gray-50">
+//         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="flex min-h-screen bg-gray-50 font-sans">
+//       <NavDash setToken={setToken} />
+//       <Sidebar setToken={setToken} />
+//       <div className="flex-1 p-6 md:p-8 md:mt-16 sm:mr-16" dir="rtl">
+//         <div className="flex justify-between items-center mb-6">
+//           <h1 className="text-3xl md:text-4xl font-bold text-gray-800 bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">
+//             إدارة القضايا القانونية
+//           </h1>
+//           <div className="flex items-center gap-3">
+//             <button
+//               onClick={handleExport}
+//               className="flex items-center gap-2 px-4 py-2 bg-green-700 text-white rounded-lg shadow-sm hover:bg-green-700 transition-all duration-300 text-sm"
+//             >
+//               <Download className="h-4 w-4" /> تصدير
+//             </button>
+//             <button
+//               onClick={() => setShowFormModal(true)}
+//               className="flex items-center gap-2 px-4 py-2 bg-green-700 text-white rounded-lg shadow-sm hover:bg-green-700 transition-all duration-300 text-sm"
+//             >
+//               <Plus className="h-4 w-4" /> إضافة قضية
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* Stats Section */}
+//         <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+//           <motion.div
+//             whileHover={{ scale: 1.02 }}
+//             className="bg-white p-5 rounded-xl shadow-lg border border-gray-100 flex items-center gap-4"
+//           >
+//             <div className="p-3 bg-green-100 rounded-full">
+//               <FileText className="h-6 w-6 text-green-600" />
+//             </div>
+//             <div>
+//               <p className="text-sm font-medium text-gray-600">إجمالي القضايا</p>
+//               <p className="text-2xl font-bold text-gray-800">{summary.total}</p>
+//             </div>
+//           </motion.div>
+//           <motion.div
+//             whileHover={{ scale: 1.02 }}
+//             className="bg-white p-5 rounded-xl shadow-lg border border-gray-100 flex items-center gap-4"
+//           >
+//             <div className="p-3 bg-yellow-100 rounded-full">
+//               <Calendar className="h-6 w-6 text-yellow-600" />
+//             </div>
+//             <div>
+//               <p className="text-sm font-medium text-gray-600">القضايا الجارية</p>
+//               <p className="text-2xl font-bold text-gray-800">{summary.inProgress}</p>
+//             </div>
+//           </motion.div>
+//           <motion.div
+//             whileHover={{ scale: 1.02 }}
+//             className="bg-white p-5 rounded-xl shadow-lg border border-gray-100 flex items-center gap-4"
+//           >
+//             <div className="p-3 bg-blue-100 rounded-full">
+//               <User className="h-6 w-6 text-blue-600" />
+//             </div>
+//             <div>
+//               <p className="text-sm font-medium text-gray-600">القضايا المنتهية</p>
+//               <p className="text-2xl font-bold text-gray-800">{summary.closed}</p>
+//             </div>
+//           </motion.div>
+//         </div>
+
+//         {/* Filter Section */}
+//         <div className="flex flex-col sm:flex-row justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-md border border-gray-100">
+//           <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+//             <div className="relative w-full sm:w-64">
+//               <input
+//                 type="text"
+//                 value={searchQuery}
+//                 onChange={(e) => {
+//                   setSearchQuery(e.target.value);
+//                   handleFilter();
+//                 }}
+//                 placeholder="البحث حسب العنوان أو الوصف أو العميل أو الخصم..."
+//                 className="w-full px-4 py-2 pl-10 bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 transition-all duration-300 text-gray-700 placeholder-gray-400 text-sm"
+//               />
+//               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+//             </div>
+//             <select
+//               value={filterStatus}
+//               onChange={(e) => {
+//                 setFilterStatus(e.target.value);
+//                 handleFilter();
+//               }}
+//               className="w-full sm:w-48 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 transition-all duration-300 text-gray-700 text-sm"
+//             >
+//               <option value="">جميع الحالات</option>
+//               <option value="en cours">جارية</option>
+//               <option value="terminée">منتهية</option>
+//             </select>
+//             <input
+//               type="date"
+//               value={filterDate}
+//               onChange={(e) => setFilterDate(e.target.value)}
+//               onBlur={handleFilter}
+//               className="w-full sm:w-48 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 transition-all duration-300 text-gray-700 text-sm"
+//             />
+//           </div>
+//           <div className="flex items-center gap-3 mt-4 sm:mt-0">
+//             {selectedCases.length > 0 && (
+//               <button
+//                 onClick={handleBulkDelete}
+//                 className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg shadow-sm hover:bg-red-700 transition-all duration-300 text-sm"
+//               >
+//                 <FaTrash className="h-4 w-4" /> حذف المحدد ({selectedCases.length})
+//               </button>
+//             )}
+//           </div>
+//         </div>
+
+//         {error && (
+//           <motion.div
+//             initial={{ opacity: 0, y: -20 }}
+//             animate={{ opacity: 1, y: 0 }}
+//             className="mb-6 p-4 bg-red-50 text-red-800 rounded-lg shadow-sm flex justify-between items-center border border-red-200"
+//           >
+//             <span>{error}</span>
+//             <button onClick={() => setError(null)} className="text-red-600 hover:text-red-700">
+//               <X className="h-5 w-5" />
+//             </button>
+//           </motion.div>
+//         )}
+
+//         {/* Add/Edit Case Modal */}
+//         <AnimatePresence>
+//           {showFormModal && (
+//             <motion.div
+//               initial={{ opacity: 0 }}
+//               animate={{ opacity: 1 }}
+//               exit={{ opacity: 0 }}
+//               className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+//               onClick={() => setShowFormModal(false)}
+//             >
+//               <motion.div
+//                 initial={{ scale: 0.95, opacity: 0 }}
+//                 animate={{ scale: 1, opacity: 1 }}
+//                 exit={{ scale: 0.95, opacity: 0 }}
+//                 className="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 shadow-2xl"
+//                 onClick={(e) => e.stopPropagation()}
+//               >
+//                 <div className="flex justify-between items-center mb-6">
+//                   <h2 className="text-2xl font-bold text-gray-800">
+//                     {editingId ? 'تعديل القضية' : 'إضافة قضية جديدة'}
+//                   </h2>
+//                   <button
+//                     onClick={() => {
+//                       setShowFormModal(false);
+//                       setEditingId(null);
+//                       setFormData({ titre: '', description: '', type_id: '', avocat_id: '', client_id: '', adversaire: '', statut: 'en cours', attachments: [] });
+//                       setAttachmentFiles([]);
+//                     }}
+//                     className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
+//                   >
+//                     <X className="h-6 w-6" />
+//                   </button>
+//                 </div>
+//                 <form onSubmit={handleSubmit}>
+//                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//                     {/* Left Column */}
+//                     <div className="space-y-4">
+//                       <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">العنوان</label>
+//                         <input
+//                           type="text"
+//                           value={formData.titre}
+//                           onChange={(e) => setFormData({ ...formData, titre: e.target.value })}
+//                           className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm"
+//                           required
+//                         />
+//                       </div>
+//                       <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">الوصف</label>
+//                         <textarea
+//                           value={formData.description}
+//                           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+//                           className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm resize-none h-24"
+//                           required
+//                         />
+//                       </div>
+//                       <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">العميل</label>
+//                         {loadingClients ? (
+//                           <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 animate-pulse text-sm">
+//                             جاري تحميل العملاء...
+//                           </div>
+//                         ) : (
+//                           <select
+//                             value={formData.client_id}
+//                             onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
+//                             className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm"
+//                             required
+//                           >
+//                             <option value="" disabled>
+//                               اختر العميل
+//                             </option>
+//                             {clients.map((client) => (
+//                               <option key={client._id} value={client._id}>
+//                                 {client.nom}
+//                               </option>
+//                             ))}
+//                           </select>
+//                         )}
+//                       </div>
+//                     </div>
+//                     {/* Right Column */}
+//                     <div className="space-y-4">
+//                       <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">النوع</label>
+//                         {loadingTypes ? (
+//                           <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 animate-pulse text-sm">
+//                             جاري تحميل الأنواع...
+//                           </div>
+//                         ) : (
+//                           <select
+//                             value={formData.type_id}
+//                             onChange={(e) => setFormData({ ...formData, type_id: e.target.value })}
+//                             className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm"
+//                             required
+//                           >
+//                             <option value="" disabled>
+//                               اختر النوع
+//                             </option>
+//                             {types.map((type) => (
+//                               <option key={type._id} value={type._id}>
+//                                 {type.name || type._id}
+//                               </option>
+//                             ))}
+//                           </select>
+//                         )}
+//                       </div>
+//                       <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">الخصم</label>
+//                         <input
+//                           type="text"
+//                           value={formData.adversaire}
+//                           onChange={(e) => setFormData({ ...formData, adversaire: e.target.value })}
+//                           className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm"
+//                           required
+//                         />
+//                       </div>
+//                       <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">الحالة</label>
+//                         <select
+//                           value={formData.statut}
+//                           onChange={(e) => setFormData({ ...formData, statut: e.target.value })}
+//                           className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm"
+//                           required
+//                         >
+//                           <option value="en cours">جارية</option>
+//                           <option value="terminée">منتهية</option>
+//                         </select>
+//                       </div>
+//                       <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">المرفقات</label>
+//                         <input
+//                           type="file"
+//                           multiple
+//                           onChange={handleFileChange}
+//                           accept="image/*,application/pdf,.doc,.docx"
+//                           className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+//                         />
+//                         {attachmentFiles.length > 0 && (
+//                           <div className="mt-2 flex flex-wrap gap-2">
+//                             {attachmentFiles.map((file, index) => (
+//                               <span key={index} className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+//                                 {file.name}
+//                                 <button
+//                                   type="button"
+//                                   onClick={() => setAttachmentFiles(attachmentFiles.filter((_, i) => i !== index))}
+//                                   className="ml-2 text-red-600 hover:text-red-700"
+//                                 >
+//                                   <X className="h-4 w-4" />
+//                                 </button>
+//                               </span>
+//                             ))}
+//                           </div>
+//                         )}
+//                         {editingId && formData.attachments.length > 0 && (
+//                           <div className="mt-2 flex flex-wrap gap-2">
+//                             {formData.attachments.map((filePath, index) => (
+//                               <span key={index} className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
+//                                 {getFileName(filePath)}
+//                                 <button
+//                                   type="button"
+//                                   onClick={() => handleDownloadAttachment(filePath)}
+//                                   className="ml-2 text-blue-600 hover:text-blue-700"
+//                                 >
+//                                   <DownloadIcon className="h-4 w-4" />
+//                                 </button>
+//                               </span>
+//                             ))}
+//                           </div>
+//                         )}
+//                       </div>
+//                     </div>
+//                   </div>
+//                   <div className="mt-6 flex justify-end gap-3">
+//                     <button
+//                       type="submit"
+//                       className="flex items-center gap-2 px-4 py-2 bg-green-700 text-white rounded-lg shadow-sm hover:bg-green-700 transition-all duration-300 text-sm"
+//                     >
+//                       {editingId ? 'تعديل القضية' : 'إضافة القضية'}
+//                     </button>
+//                   </div>
+//                 </form>
+//               </motion.div>
+//             </motion.div>
+//           )}
+//         </AnimatePresence>
+
+//         <motion.div
+//           initial={{ opacity: 0 }}
+//           animate={{ opacity: 1 }}
+//           className="mt-8 bg-white rounded-xl shadow-lg border border-gray-100 overflow-x-auto"
+//         >
+//           <table className="w-full">
+//             <thead className="bg-gray-50">
+//               <tr>
+//                 <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                   <input
+//                     type="checkbox"
+//                     onChange={(e) =>
+//                       setSelectedCases(e.target.checked ? cases.map((c) => c._id) : [])
+//                     }
+//                     checked={selectedCases.length === cases.length && cases.length > 0}
+//                     className="accent-green-600 rounded"
+//                   />
+//                 </th>
+//                 <th
+//                   className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer"
+//                   onClick={() => handleSort('titre')}
+//                 >
+//                   العنوان {sortConfig.key === 'titre' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+//                 </th>
+//                 <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                   الوصف
+//                 </th>
+//                 <th
+//                   className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer"
+//                   onClick={() => handleSort('type_id')}
+//                 >
+//                   النوع {sortConfig.key === 'type_id' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+//                 </th>
+//                 <th
+//                   className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer"
+//                   onClick={() => handleSort('client_id')}
+//                 >
+//                   العميل {sortConfig.key === 'client_id' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+//                 </th>
+//                 <th
+//                   className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer"
+//                   onClick={() => handleSort('adversaire')}
+//                 >
+//                   الخصم {sortConfig.key === 'adversaire' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+//                 </th>
+//                 <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                   الحالة
+//                 </th>
+//                 <th
+//                   className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer"
+//                   onClick={() => handleSort('date_creation')}
+//                 >
+//                   تاريخ الإنشاء {sortConfig.key === 'date_creation' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+//                 </th>
+//                 <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                   المرفقات
+//                 </th>
+//                 <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+//                   الإجراءات
+//                 </th>
+//               </tr>
+//             </thead>
+//             <tbody className="divide-y divide-gray-100">
+//               <AnimatePresence>
+//                 {paginatedCases.map((caseItem) => (
+//                   <motion.tr
+//                     key={caseItem._id}
+//                     initial={{ opacity: 0, y: 10 }}
+//                     animate={{ opacity: 1, y: 0 }}
+//                     exit={{ opacity: 0, y: -10 }}
+//                     transition={{ duration: 0.3 }}
+//                     className="hover:bg-gray-50 transition-all duration-200"
+//                   >
+//                     <td className="px-6 py-4 whitespace-nowrap">
+//                       <input
+//                         type="checkbox"
+//                         checked={selectedCases.includes(caseItem._id)}
+//                         onChange={() =>
+//                           setSelectedCases(
+//                             selectedCases.includes(caseItem._id)
+//                               ? selectedCases.filter((id) => id !== caseItem._id)
+//                               : [...selectedCases, caseItem._id]
+//                           )
+//                         }
+//                         className="accent-green-600 rounded"
+//                       />
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap text-gray-800 font-medium text-sm">
+//                       {caseItem.titre}
+//                     </td>
+//                     <td className="px-6 py-4 text-gray-600 text-
+
+// sm line-clamp-2">{caseItem.description}</td>
+//                     <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
+//                       {caseItem.type_id?.name || 'غير محدد'}
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
+//                       {caseItem.client_id?.nom || 'غير محدد'}
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
+//                       {caseItem.adversaire || 'غير محدد'}
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap">
+//                       <span
+//                         className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+//                           caseItem.statut === 'en cours'
+//                             ? 'bg-green-100 text-green-800'
+//                             : 'bg-gray-100 text-gray-800'
+//                         }`}
+//                       >
+//                         {statutDisplay[caseItem.statut] || caseItem.statut}
+//                       </span>
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
+//                       {new Date(caseItem.date_creation).toLocaleDateString('ar-EG')}
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
+//                       <button
+//                         onClick={() => handleAttachmentsModal(caseItem)}
+//                         className="flex items-center gap-1 text-blue-600 hover:text-blue-700 transition-colors duration-200"
+//                       >
+//                         <Paperclip className="h-5 w-5" />
+//                         ({caseItem.attachments ? caseItem.attachments.length : 0})
+//                       </button>
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+//                       <div className="flex gap-2">
+//                         <ActionIcon
+//                           bgColor="#3b82f6"
+//                           hoverColor="#2563eb"
+//                           title="عرض"
+//                           onClick={() => {
+//                             setSelectedCase(caseItem);
+//                             setShowDetailsModal(true);
+//                           }}
+//                         >
+//                           <FaEye className="h-3 w-3" />
+//                         </ActionIcon>
+//                         <ActionIcon
+//                           bgColor={theme.primary}
+//                           hoverColor={theme.primaryDark}
+//                           title="تعديل"
+//                           onClick={() => handleEdit(caseItem)}
+//                         >
+//                           <FaEdit className="h-3 w-3" />
+//                         </ActionIcon>
+//                         <ActionIcon
+//                           bgColor={theme.error}
+//                           hoverColor="#dc2626"
+//                           title="حذف"
+//                           onClick={() => handleDelete(caseItem._id)}
+//                         >
+//                           <FaTrash className="h-3 w-3," />
+//                         </ActionIcon>
+//                       </div>
+//                     </td>
+//                   </motion.tr>
+//                 ))}
+//               </AnimatePresence>
+//             </tbody>
+//           </table>
+//           {paginatedCases.length === 0 && (
+//             <div className="text-center text-gray-500 p-6">لا توجد قضايا متاحة</div>
+//           )}
+//         </motion.div>
+
+//         <div className="flex justify-center gap-2 mt-6">
+//           <button
+//             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+//             disabled={currentPage === 1}
+//             className="px-4 py-2 bg-white border border-gray-200 text-gray-800 rounded-lg shadow-sm hover:bg-gray-100 transition-all duration-300 disabled:opacity-50 text-sm"
+//           >
+//             السابق
+//           </button>
+//           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+//             <button
+//               key={page}
+//               onClick={() => setCurrentPage(page)}
+//               className={`px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm ${
+//                 currentPage === page
+//                   ? 'bg-green-600 text-white'
+//                   : 'bg-white border border-gray-200 text-gray-800 hover:bg-gray-100'
+//               }`}
+//             >
+//               {page}
+//             </button>
+//           ))}
+//           <button
+//             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+//             disabled={currentPage === totalPages}
+//             className="px-4 py-2 bg-white border border-gray-200 text-gray-800 rounded-lg shadow-sm hover:bg-gray-100 transition-all duration-300 disabled:opacity-50 text-sm"
+//           >
+//             التالي
+//           </button>
+//         </div>
+
+//         {/* Details Modal */}
+//         <AnimatePresence>
+//           {showDetailsModal && selectedCase && (
+//             <motion.div
+//               initial={{ opacity: 0 }}
+//               animate={{ opacity: 1 }}
+//               exit={{ opacity: 0 }}
+//               className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+//               onClick={() => setShowDetailsModal(false)}
+//             >
+//               <motion.div
+//                 initial={{ scale: 0.95, opacity: 0 }}
+//                 animate={{ scale: 1, opacity: 1 }}
+//                 exit={{ scale: 0.95, opacity: 0 }}
+//                 className="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 shadow-2xl"
+//                 onClick={(e) => e.stopPropagation()}
+//               >
+//                 <div className="flex justify-between items-center mb-6">
+//                   <h2 className="text-2xl font-bold text-gray-800">تفاصيل القضية</h2>
+//                   <button
+//                     onClick={() => setShowDetailsModal(false)}
+//                     className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
+//                   >
+//                     <X className="h-6 w-6" />
+//                   </button>
+//                 </div>
+//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//                   {/* Left Column */}
+//                   <div className="space-y-4">
+//                     <div>
+//                       <span className="font-semibold text-gray-700">العنوان:</span>
+//                       <p className="mt-1 text-gray-600">{selectedCase.titre}</p>
+//                     </div>
+//                     <div>
+//                       <span className="font-semibold text-gray-700">الوصف:</span>
+//                       <p className="mt-1 text-gray-600">{selectedCase.description}</p>
+//                     </div>
+//                     <div>
+//                       <span className="font-semibold text-gray-700">النوع:</span>
+//                       <p className="mt-1 text-gray-600">{selectedCase.type_id?.name || 'غير محدد'}</p>
+//                     </div>
+//                     <div>
+//                       <span className="font-semibold text-gray-700">الحالة:</span>
+//                       <p className="mt-1 text-gray-600">{statutDisplay[selectedCase.statut] || selectedCase.statut}</p>
+//                     </div>
+//                   </div>
+//                   {/* Right Column */}
+//                   <div className="space-y-4">
+//                     <div>
+//                       <span className="font-semibold text-gray-700">العميل:</span>
+//                       <p className="mt-1 text-gray-600">{selectedCase.client_id?.nom || 'غير محدد'}</p>
+//                     </div>
+//                     <div>
+//                       <span className="font-semibold text-gray-700">الخصم:</span>
+//                       <p className="mt-1 text-gray-600">{selectedCase.adversaire || 'غير محدد'}</p>
+//                     </div>
+//                     <div>
+//                       <span className="font-semibold text-gray-700">المحامي:</span>
+//                       <p className="mt-1 text-gray-600">
+//                         {selectedCase.avocat_id ? `${selectedCase.avocat_id.nom} ${selectedCase.avocat_id.prenom}` : 'غير محدد'}
+//                       </p>
+//                     </div>
+//                     <div>
+//                       <span className="font-semibold text-gray-700">تاريخ الإنشاء:</span>
+//                       <p className="mt-1 text-gray-600">{new Date(selectedCase.date_creation).toLocaleDateString('ar-EG')}</p>
+//                     </div>
+//                   </div>
+//                 </div>
+//                 {/* Attachments Section (Full Width) */}
+//                 <div className="mt-6">
+//                   <span className="font-semibold text-gray-700">المرفقات:</span>
+//                   {selectedCase.attachments && selectedCase.attachments.length > 0 ? (
+//                     <div className="mt-2 flex flex-wrap gap-2">
+//                       {selectedCase.attachments.map((filePath, index) => (
+//                         <button
+//                           key={index}
+//                           onClick={() => handleDownloadAttachment(filePath)}
+//                           className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm hover:bg-blue-200 transition-colors duration-200"
+//                         >
+//                           {getFileName(filePath)}
+//                           <DownloadIcon className="h-4 w-4 ml-2" />
+//                         </button>
+//                       ))}
+//                     </div>
+//                   ) : (
+//                     <p className="mt-1 text-gray-600">لا توجد مرفقات</p>
+//                   )}
+//                 </div>
+//               </motion.div>
+//             </motion.div>
+//           )}
+//         </AnimatePresence>
+
+//         {/* Attachments Modal */}
+//         <AnimatePresence>
+//           {showAttachmentsModal && selectedCase && (
+//             <motion.div
+//               initial={{ opacity: 0 }}
+//               animate={{ opacity: 1 }}
+//               exit={{ opacity: 0 }}
+//               className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+//               onClick={() => setShowAttachmentsModal(false)}
+//             >
+//               <motion.div
+//                 initial={{ scale: 0.95, opacity: 0 }}
+//                 animate={{ scale: 1, opacity: 1 }}
+//                 exit={{ scale: 0.95, opacity: 0 }}
+//                 className="bg-white rounded-xl p-8 max-w-lg w-full mx-4 shadow-2xl"
+//                 onClick={(e) => e.stopPropagation()}
+//               >
+//                 <div className="flex justify-between items-center mb-6">
+//                   <h2 className="text-2xl font-bold text-gray-800">إدارة المرفقات</h2>
+//                   <button
+//                     onClick={() => setShowAttachmentsModal(false)}
+//                     className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
+//                   >
+//                     <X className="h-6 w-6" />
+//                   </button>
+//                 </div>
+//                 <div className="space-y-4">
+//                   <div>
+//                     <span className="font-semibold text-gray-700">المرفقات الحالية:</span>
+//                     {selectedCase.attachments && selectedCase.attachments.length > 0 ? (
+//                       <div className="mt-2 flex flex-wrap gap-2">
+//                         {selectedCase.attachments.map((filePath, index) => (
+//                           <button
+//                             key={index}
+//                             onClick={() => handleDownloadAttachment(filePath)}
+//                             className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm hover:bg-blue-200 transition-colors duration-200"
+//                           >
+//                             {getFileName(filePath)}
+//                             <DownloadIcon className="h-4 w-4 ml-2" />
+//                           </button>
+//                         ))}
+//                       </div>
+//                     ) : (
+//                       <p className="mt-1 text-gray-600">لا توجد مرفقات</p>
+//                     )}
+//                   </div>
+//                   <form onSubmit={handleAddAttachments}>
+//                     <div className="mt-4">
+//                       <label className="block text-sm font-medium text-gray-700 mb-2">إضافة مرفقات جديدة:</label>
+//                       <input
+//                         type="file"
+//                         multiple
+//                         onChange={handleFileChange}
+//                         accept="image/*,application/pdf,.doc,.docx"
+//                         className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+//                       />
+//                       {attachmentFiles.length > 0 && (
+//                         <div className="mt-2 flex flex-wrap gap-2">
+//                           {attachmentFiles.map((file, index) => (
+//                             <span key={index} className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+//                               {file.name}
+//                               <button
+//                                 type="button"
+//                                 onClick={() => setAttachmentFiles(attachmentFiles.filter((_, i) => i !== index))}
+//                                 className="ml-2 text-red-600 hover:text-red-700"
+//                               >
+//                                 <X className="h-4 w-4" />
+//                               </button>
+//                             </span>
+//                           ))}
+//                         </div>
+//                       )}
+//                     </div>
+//                     <div className="mt-6 flex justify-end gap-3">
+//                       <button
+//                         type="submit"
+//                         className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg shadow-sm hover:bg-green-700 transition-all duration-300 text-sm"
+//                       >
+//                         إضافة المرفقات
+//                       </button>
+//                     </div>
+//                   </form>
+//                 </div>
+//               </motion.div>
+//             </motion.div>
+//           )}
+//         </AnimatePresence>
+
+//         {/* Toast Container */}
+//         <Toaster position="top-right" reverseOrder={false} />
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default LegalCaseManagement;
+
+
+
+
+import React, { useState, useEffect, useRef } from 'react';
+import styled from 'styled-components';
+import { FaEye, FaEdit, FaTrash, FaDownload, FaTimes } from 'react-icons/fa';
+import { Eye, Pencil, Trash2, Plus, X, Search, Download, Calendar, User, FileText, Paperclip, Download as DownloadIcon } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
+import { jwtDecode } from 'jwt-decode';
+import toast, { Toaster } from 'react-hot-toast';
 import Sidebar from '../components/Sidebar';
 import NavDash from '../components/NavDash';
-import { FaEye, FaEdit, FaTrash, FaDownload, FaTimes, FaFilter, FaFolder, FaHourglassHalf, FaPauseCircle, FaCheckCircle } from 'react-icons/fa';
-import { motion } from 'framer-motion';
 
-// Keyframes for Animations
-const fadeIn = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`;
+// Theme for consistent colors
+const theme = {
+  primary: '#2e7d32',
+  primaryDark: '#059669',
+  error: '#ef4444',
+};
 
-const modalFadeIn = keyframes`
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-`;
-
-// Styled Components
-const LegalCaseContainer = styled.div`
-  display: flex;
-  min-height: 100vh;
-  background: #f1f5f9;
-  direction: rtl;
-  font-family: 'Inter', 'Roboto', sans-serif;
-`;
-
-const MainContent = styled.div`
-  flex: 1;
-  margin-right: 70px;
-  margin-top: 60px;
-  padding: 2rem;
-  overflow-y: auto;
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
-`;
-
-const HeaderSection = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-`;
-
-const Title = styled.h1`
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #2e7d32;
-  position: relative;
-
-  &:after {
-    content: '';
-    position: absolute;
-    bottom: -0.25rem;
-    right: 0;
-    width: 2.5rem;
-    height: 3px;
-    background: #2e7d32;
-    border-radius: 2px;
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 0.75rem;
-`;
-
-const ActionButton = styled(motion.button)`
-  padding: 0.5rem 1rem;
-  background: #2e7d32;
-  color: #ffffff;
-  font-weight: 500;
-  font-size: 0.75rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease-in-out;
-
-  &:hover {
-    background:rgb(17, 91, 48);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-const DeleteButton = styled(ActionButton)`
-  background: #e53e3e;
-
-  &:hover {
-    background: #c53030;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-// Unified Filter Section
-const FilterSection = styled(motion.div)`
-  position: relative;
-  margin-bottom: 2rem;
-  background: #ffffff;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
-`;
-
-const FilterWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  position: relative;
-`;
-
-const FilterIconWrapper = styled.div`
-  position: relative;
-`;
-
-const FilterIcon = styled.span`
-  color: #6b7280;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: color 0.3s ease-in-out;
-
-  &:hover {
-    color: #2e7d32;
-  }
-`;
-
-const FilterInputWrapper = styled.div`
-  flex: 1;
-  position: relative;
-`;
-
-const FilterInput = styled.input`
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-size: 0.75rem;
-  color: #6b7280;
-  background: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease-in-out;
-
-  &:focus {
-    outline: none;
-    border-color: #2e7d32;
-    box-shadow: 0 0 5px rgba(46, 204, 113, 0.3);
-    background: #ffffff;
-  }
-`;
-
-const FilterSelect = styled.select`
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-size: 0.75rem;
-  color: #6b7280;
-  background: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease-in-out;
-
-  &:focus {
-    outline: none;
-    border-color: #2e7d32;
-    box-shadow: 0 0 5px rgba(46, 204, 113, 0.3);
-    background: #ffffff;
-  }
-`;
-
-const FilterDropdown = styled(motion.div)`
-  position: absolute;
-  top: calc(100% + 0.5rem);
-  right: 0;
-  background: #ffffff;
-  border-radius: 0.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  padding: 0.5rem 0;
-  width: 120px;
-`;
-
-const FilterOption = styled.div`
-  padding: 0.5rem 1rem;
-  color: #6b7280;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: background 0.3s ease-in-out;
-
-  &:hover {
-    background: #f1f5f9;
-  }
-`;
-
-// Enhanced Summary Card Section
-const SummaryCard = styled.div`
-  background: #ffffff;
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-`;
-
-const SummaryItem = styled(motion.div)`
-  text-align: center;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const SummaryIcon = styled.div`
-  font-size: 1.5rem;
-  color: ${props => props.color || '#2e7d32'};
-`;
-
-const SummaryTitle = styled.h3`
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #6b7280;
-`;
-
-const SummaryValue = styled.div`
-  font-size: 1.5rem;
-  font-weight: 600;
-  ${props => {
-    switch (props.type) {
-      case 'inProgress':
-        return 'color: #f39c12;';
-      case 'pending':
-        return 'color: #e53e3e;';
-      case 'closed':
-        return 'color: #2e7d32;';
-      default:
-        return 'color: #2e7d32;';
-    }
-  }}
-`;
-
-// Cases Table Styling
-const CasesTable = styled.div`
-  background: #ffffff;
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
-  animation: ${css`${fadeIn} 0.8s ease-in-out forwards`};
-  overflow-x: auto;
-`;
-
-const TableWrapper = styled.table`
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 0.75rem;
-`;
-
-const TableHeader = styled.th`
-  padding: 1rem;
-  background: #f1f5f9;
-  color: #2e7d32;
-  font-weight: 600;
-  text-align: right;
-  border-bottom: 1px solid #e5e7eb;
-  cursor: pointer;
-  position: relative;
-
-  &:hover {
-    background: #e5e7eb;
-  }
-
-  &:first-child {
-    border-top-right-radius: 0.5rem;
-  }
-
-  &:last-child {
-    border-top-left-radius: 0.5rem;
-  }
-`;
-
-const SortArrow = styled.span`
-  margin-left: 0.5rem;
-  font-size: 0.75rem;
-`;
-
-const TableRow = styled(motion.tr)`
-  transition: all 0.3s ease-in-out;
-
-  &:hover {
-    background: #f1f5f9;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  }
-`;
-
-const TableCell = styled.td`
-  padding: 1rem;
-  color: #6b7280;
-  text-align: right;
-  border-bottom: 1px solid #e5e7eb;
-`;
-
-const StatusBadge = styled.span`
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  ${props => props.color};
-`;
-
-const ActionIcons = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`;
-
-const ActionIcon = styled(motion.button)`
+// Styled Action Button for consistency with PaymentManagement.jsx
+const ActionIcon = styled.button`
   padding: 0.5rem;
   background: ${props => props.bgColor};
-  color: #ffffff;
-  border-radius: 0.25rem;
+  color: white;
+  border-radius: 0.375rem;
   font-size: 0.875rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease-in-out;
+  transition: all 0.2s ease;
+  position: relative;
 
   &:hover {
     background: ${props => props.hoverColor};
+    transform: translateY(-1px);
+  }
+
+  &:hover:after {
+    content: attr(title);
+    position: absolute;
+    top: -2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: ${theme.textPrimary};
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
   }
 `;
 
-const Checkbox = styled.input`
-  accent-color: #2e7d32;
-  width: 0.875rem;
-  height: 0.875rem;
-`;
-
-// Pagination Styling
-const Pagination = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 2rem;
-`;
-
-const PageButton = styled(motion.button)`
-  padding: 0.5rem 1rem;
-  background: ${props => (props.active ? '#2e7d32' : '#ffffff')};
-  color: ${props => (props.active ? '#ffffff' : '#6b7280')};
-  border-radius: 0.5rem;
-  font-size: 0.75rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
-  transition: all 0.3s ease-in-out;
-
-  &:hover {
-    background: ${props => (props.active ? 'rgb(17, 91, 48)' : '#f1f5f9')};
-  }
-`;
-
-// Modal Styling
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled(motion.div)`
-  background: #ffffff;
-  border-radius: 0.5rem;
-  padding: 2rem;
-  width: 90%;
-  max-width: 700px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+// Styled components for autocomplete
+const AutocompleteContainer = styled.div`
   position: relative;
+  width: 100%;
 `;
 
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
+const AutocompleteInput = styled.input`
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: #1f2937;
+  background: #fff;
+  transition: all 0.2s ease;
+  &:focus {
+    outline: none;
+    border-color: ${theme.primary};
+    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+  }
 `;
 
-const ModalTitle = styled.h2`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #2e7d32;
+const AutocompleteList = styled.ul`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  margin-top: 0.25rem;
+  padding: 0;
+  list-style: none;
 `;
 
-const CloseButton = styled(motion.button)`
-  background: none;
-  color: #6b7280;
-  font-size: 1.25rem;
-  transition: color 0.3s ease-in-out;
-
+const AutocompleteItem = styled.li`
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #1f2937;
+  cursor: pointer;
   &:hover {
-    color: #e53e3e;
+    background: #f1f5f9;
   }
 `;
 
-const ModalForm = styled.form`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-`;
-
-const FormField = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-`;
-
-const FormLabel = styled.label`
-  font-size: 0.75rem;
+const ManageClientsButton = styled.button`
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: ${theme.primary};
+  color: white;
+  font-size: 0.875rem;
   font-weight: 500;
-  color: #6b7280;
-`;
-
-const FormInput = styled.input`
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-size: 0.75rem;
-  color: #6b7280;
-  background: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  transition: border 0.3s ease-in-out;
-
-  &:focus {
-    outline: none;
-    border-color: #2e7d32;
-    box-shadow: 0 0 5px rgba(46, 204, 113, 0.3);
-  }
-`;
-
-const FormSelect = styled.select`
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-size: 0.75rem;
-  color: #6b7280;
-  background: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  transition: border 0.3s ease-in-out;
-
-  &:focus {
-    outline: none;
-    border-color: #2e7d32;
-    box-shadow: 0 0 5px rgba(46, 204, 113, 0.3);
-  }
-`;
-
-const SubmitButton = styled(motion.button)`
-  padding: 0.5rem;
-  background: #2e7d32;
-  color: #ffffff;
-  font-weight: 500;
-  font-size: 0.75rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  grid-column: span 2;
+  border-radius: 0.375rem;
   transition: all 0.3s ease-in-out;
-
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   &:hover {
-    background: rgb(17, 91, 48);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background: ${theme.primaryDark};
+    transform: translateY(-1px);
   }
 `;
 
-function LegalCaseManagement() {
-  const [filters, setFilters] = useState({ status: '', type: '', date: '2025-04-16' });
-  const [filterType, setFilterType] = useState('type'); 
-  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+const API_URL = 'http://localhost:5000/api/affaires';
+const LAWYERS_API_URL = 'http://localhost:5000/api/avocats';
+const TYPES_API_URL = 'http://localhost:5000/api/types';
+const CLIENTS_API_URL = 'http://localhost:5000/api/clients';
+
+const LegalCaseManagement = ({ setToken }) => {
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
+  const [cases, setCases] = useState([]);
+  const [filteredCases, setFilteredCases] = useState([]);
+  const [selectedCase, setSelectedCase] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterDate, setFilterDate] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: '', direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
-  const [cases, setCases] = useState([]);
   const [selectedCases, setSelectedCases] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newCase, setNewCase] = useState({
-    caseNumber: '',
-    title: '',
-    client: '',
-    opponent: '',
-    status: 'قيد التقدم',
-    totalAmount: 0,
+  const [formData, setFormData] = useState({
+    titre: '',
+    description: '',
+    type_id: '',
+    avocat_id: '',
+    client_id: '',
+    client_name: '', // New field for autocomplete display
+    adversaire: '',
+    statut: 'en cours',
+    attachments: [],
   });
+  const [attachmentFiles, setAttachmentFiles] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [lawyers, setLawyers] = useState([]);
+  const [types, setTypes] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [filteredClients, setFilteredClients] = useState([]);
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false);
+  const [loadingLawyers, setLoadingLawyers] = useState(true);
+  const [loadingTypes, setLoadingTypes] = useState(true);
+  const [loadingClients, setLoadingClients] = useState(true);
+  const [avocatId, setAvocatId] = useState(null);
   const casesPerPage = 5;
+  const navigate = useNavigate();
+  const clientInputRef = useRef(null);
 
-  // Static Data for April 16, 2025
-  const dataApril16 = [
-    {
-      caseNumber: "LAW0101",
-      title: "طلاق",
-      client: "مريم الصغير",
-      opponent: "حميد المرضي",
-      status: { text: "قيد التقدم", color: "background: #fefcbf; color: #f39c12;" },
-      totalAmount: 20000,
-    },
-    {
-      caseNumber: "LAW0102",
-      title: "عقد",
-      client: "حميد المرضي",
-      opponent: "زكريا حداف",
-      status: { text: "معلق", color: "background: #fee2e2; color: #e53e3e;" },
-      totalAmount: 25000,
-    },
-    {
-      caseNumber: "LAW0103",
-      title: "دعوى قضائية",
-      client: "زكريا حداف",
-      opponent: "مريم الصغير",
-      status: { text: "مغلق", color: "background: #d1fae5; color: #2e7d32;" },
-      totalAmount: 18000,
-    },
-    {
-      caseNumber: "LAW0104",
-      title: "نزاع تجاري",
-      client: "أحمد قبالي",
-      opponent: "مصطفى لاريك",
-      status: { text: "قيد التقدم", color: "background: #fefcbf; color: #f39c12;" },
-      totalAmount: 20000,
-    },
-    {
-      caseNumber: "LAW0105",
-      title: "إرث",
-      client: "فاطمة الزهراء",
-      opponent: "يوسف بنعيسى",
-      status: { text: "معلق", color: "background: #fee2e2; color: #e53e3e;" },
-      totalAmount: 20000,
-    },
-    {
-      caseNumber: "LAW0106",
-      title: "عمالية",
-      client: "خديجة العلوي",
-      opponent: "عبد الله السعدي",
-      status: { text: "مغلق", color: "background: #d1fae5; color: #2e7d32;" },
-      totalAmount: 20000,
-    },
-    {
-      caseNumber: "LAW0107",
-      title: "دعوى إدارية",
-      client: "نور الدين المريني",
-      opponent: "رشيد الصغير",
-      status: { text: "قيد التقدم", color: "background: #fefcbf; color: #f39c12;" },
-      totalAmount: 15000,
-    },
-  ];
+  const statutDisplay = {
+    'en cours': 'جارية',
+    terminée: 'منتهية',
+  };
 
-  // Static Data for April 20, 2025
-  const dataApril20 = [
-    {
-      caseNumber: "LAW0108",
-      title: "طلاق",
-      client: "علي بن صالح",
-      opponent: "حنان الخطيب",
-      status: { text: "قيد التقدم", color: "background: #fefcbf; color: #f39c12;" },
-      totalAmount: 20000,
-    },
-    {
-      caseNumber: "LAW0109",
-      title: "عقد",
-      client: "إبراهيم العثماني",
-      opponent: "لطيفة الصغير",
-      status: { text: "معلق", color: "background: #fee2e2; color: #e53e3e;" },
-      totalAmount: 30000,
-    },
-    {
-      caseNumber: "LAW0110",
-      title: "دعوى قضائية",
-      client: "خالد المغربي",
-      opponent: "سعاد بنت أحمد",
-      status: { text: "مغلق", color: "background: #d1fae5; color: #2e7d32;" },
-      totalAmount: 22000,
-    },
-    {
-      caseNumber: "LAW0111",
-      title: "نزاع تجاري",
-      client: "محسن الراشدي",
-      opponent: "زكرياء العلوي",
-      status: { text: "قيد التقدم", color: "background: #fefcbf; color: #f39c12;" },
-      totalAmount: 20000,
-    },
-    {
-      caseNumber: "LAW0112",
-      title: "إرث",
-      client: "نبيلة الصغير",
-      opponent: "أمينة بنت يوسف",
-      status: { text: "معلق", color: "background: #fee2e2; color: #e53e3e;" },
-      totalAmount: 20000,
-    },
-    {
-      caseNumber: "LAW0113",
-      title: "عمالية",
-      client: "سعاد بنت أحمد",
-      opponent: "علي بن صالح",
-      status: { text: "مغلق", color: "background: #d1fae5; color: #2e7d32;" },
-      totalAmount: 21000,
-    },
-    {
-      caseNumber: "LAW0114",
-      title: "دعوى إدارية",
-      client: "زكرياء العلوي",
-      opponent: "نبيلة الصغير",
-      status: { text: "قيد التقدم", color: "background: #fefcbf; color: #f39c12;" },
-      totalAmount: 15000,
-    },
-  ];
-
-  // Initialize cases state with April 16 data
-  if (cases.length === 0) {
-    setCases(filters.date === '2025-04-16' ? dataApril16 : dataApril20);
-  }
-
-  // Select data based on the date
-  const selectedData = cases;
-
-  // Filter the data based on the unified filter
-  const filteredCases = selectedData.filter(caseItem => {
-    const matchesStatus = filters.status ? caseItem.status.text === filters.status : true;
-    const matchesType = filters.type ? caseItem.title.includes(filters.type) : true;
-    return matchesStatus && matchesType;
-  });
-
-  // Sort the data
-  const sortedCases = [...filteredCases].sort((a, b) => {
-    if (!sortConfig.key) return 0;
-    const aValue = a[sortConfig.key];
-    const bValue = b[sortConfig.key];
-    if (sortConfig.key === 'caseNumber') {
-      return sortConfig.direction === 'asc'
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setAvocatId(decoded.id);
+      } catch (err) {
+        console.error('Error decoding token:', err);
+        setError('فشل التحقق من المصادقة');
+      }
+    } else {
+      setError('لم يتم العثور على رمز المصادقة');
     }
-    return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
-  });
+  }, []);
 
-  // Paginate the data
-  const totalPages = Math.ceil(sortedCases.length / casesPerPage);
-  const paginatedCases = sortedCases.slice(
-    (currentPage - 1) * casesPerPage,
-    currentPage * casesPerPage
-  );
+  useEffect(() => {
+    if (avocatId) {
+      fetchCases();
+      fetchClients();
+    }
+    fetchLawyers();
+    fetchTypes();
+  }, [avocatId]);
 
-  // Calculate summary stats
-  const summary = {
-    total: selectedData.length,
-    inProgress: selectedData.filter(c => c.status.text === 'قيد التقدم').length,
-    pending: selectedData.filter(c => c.status.text === 'معلق').length,
-    closed: selectedData.filter(c => c.status.text === 'مغلق').length,
+  useEffect(() => {
+    // Filter clients based on client_name
+    if (formData.client_name) {
+      const filtered = clients.filter((client) =>
+        client.nom.toLowerCase().includes(formData.client_name.toLowerCase())
+      );
+      setFilteredClients(filtered);
+      setShowClientSuggestions(filtered.length > 0);
+    } else {
+      setFilteredClients(clients);
+      setShowClientSuggestions(false);
+    }
+  }, [formData.client_name, clients]);
+
+  const fetchCases = async () => {
+    if (!avocatId) return;
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/avocat/${avocatId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      setCases(response.data);
+      setFilteredCases(response.data);
+    } catch (error) {
+      if (error.response?.status === 404) {
+        setCases([]);
+        setFilteredCases([]);
+      } else {
+        setError('فشل جلب القضايا');
+        console.error('Fetch cases error:', error.response?.data);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const headers = [
-    { label: "", key: "" }, // For checkbox
-    { label: "رقم القضية", key: "caseNumber" },
-    { label: "العنوان", key: "title" },
-    { label: "العميل", key: "client" },
-    { label: "الخصم", key: "opponent" },
-    { label: "الحالة", key: "status" },
-    { label: "الإجمالي (MAD)", key: "totalAmount" },
-    { label: "الإجراءات", key: "" },
-  ];
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
-    setCurrentPage(1); // Reset to first page on filter change
+  const fetchLawyers = async () => {
+    try {
+      setLoadingLawyers(true);
+      const response = await axios.get(LAWYERS_API_URL, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      setLawyers(response.data);
+    } catch (error) {
+      setError('فشل جلب بيانات المحامين');
+      console.error('Fetch lawyers error:', error.response?.data);
+    } finally {
+      setLoadingLawyers(false);
+    }
   };
 
-  const handleDateChange = (e) => {
-    setFilters(prev => ({ ...prev, date: e.target.value }));
-    setCases(e.target.value === '2025-04-16' ? dataApril16 : dataApril20);
-    setCurrentPage(1); // Reset to first page on date change
+  const fetchTypes = async () => {
+    try {
+      setLoadingTypes(true);
+      const response = await axios.get(TYPES_API_URL, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      setTypes(response.data);
+    } catch (error) {
+      setError('فشل جلب أنواع القضايا');
+      console.error('Fetch types error:', error.response?.data);
+    } finally {
+      setLoadingTypes(false);
+    }
   };
 
-  const handleSort = (key) => {
-    setSortConfig({
-      key,
-      direction: sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc',
+  const fetchClients = async () => {
+    try {
+      setLoadingClients(true);
+      const response = await axios.get(CLIENTS_API_URL, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      setClients(response.data);
+      setFilteredClients(response.data);
+    } catch (error) {
+      setError('فشل جلب بيانات العملاء');
+      console.error('Fetch clients error:', error.response?.data);
+    } finally {
+      setLoadingClients(false);
+    }
+  };
+
+  const handleFilter = () => {
+    let filtered = cases;
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (c) =>
+          c.titre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          c.client_id?.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          c.adversaire?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    if (filterStatus) {
+      filtered = filtered.filter((c) => c.statut === filterStatus);
+    }
+    if (filterDate) {
+      const selectedDate = new Date(filterDate);
+      selectedDate.setHours(0, 0, 0, 0);
+      filtered = filtered.filter((c) => {
+        const creationDate = new Date(c.date_creation);
+        creationDate.setHours(0, 0, 0, 0);
+        return (
+          creationDate.getFullYear() === selectedDate.getFullYear() &&
+          creationDate.getMonth() === selectedDate.getMonth() &&
+          creationDate.getDate() === selectedDate.getDate()
+        );
+      });
+    }
+    setFilteredCases(filtered);
+    setCurrentPage(1);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.titre || !formData.description || !formData.type_id || !formData.client_id || !formData.adversaire) {
+      setError('جميع الحقول مطلوبة');
+      toast.error('جميع الحقول مطلوبة');
+      return;
+    }
+    const submitData = new FormData();
+    submitData.append('titre', formData.titre);
+    submitData.append('description', formData.description);
+    submitData.append('type_id', formData.type_id);
+    submitData.append('avocat_id', avocatId);
+    submitData.append('client_id', formData.client_id);
+    submitData.append('adversaire', formData.adversaire);
+    submitData.append('statut', formData.statut);
+    attachmentFiles.forEach((file) => {
+      submitData.append('attachments', file);
     });
+
+    try {
+      let response;
+      if (editingId) {
+        response = await axios.put(`${API_URL}/${editingId}`, submitData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        setCases(cases.map((c) => (c._id === editingId ? response.data : c)));
+        setEditingId(null);
+        toast.success('تم تعديل القضية بنجاح');
+      } else {
+        response = await axios.post(API_URL, submitData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        setCases([...cases, response.data]);
+        toast.success('تم إضافة القضية بنجاح');
+      }
+      setFormData({
+        titre: '',
+        description: '',
+        type_id: '',
+        avocat_id: '',
+        client_id: '',
+        client_name: '',
+        adversaire: '',
+        statut: 'en cours',
+        attachments: [],
+      });
+      setAttachmentFiles([]);
+      setShowFormModal(false);
+      fetchCases();
+      setError(null);
+    } catch (error) {
+      setError(error.response?.data?.message || 'حدث خطأ أثناء حفظ القضية');
+      toast.error(error.response?.data?.message || 'حدث خطأ أثناء حفظ القضية');
+    }
+  };
+
+  const handleEdit = (caseItem) => {
+    setFormData({
+      titre: caseItem.titre,
+      description: caseItem.description,
+      type_id: caseItem.type_id._id,
+      avocat_id: caseItem.avocat_id._id,
+      client_id: caseItem.client_id?._id || '',
+      client_name: caseItem.client_id?.nom || '',
+      adversaire: caseItem.adversaire || '',
+      statut: caseItem.statut,
+      attachments: caseItem.attachments || [],
+    });
+    setAttachmentFiles([]);
+    setEditingId(caseItem._id);
+    setShowFormModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('هل أنت متأكد من حذف هذه القضية؟')) {
+      try {
+        await axios.delete(`${API_URL}/${id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        setCases(cases.filter((c) => c._id !== id));
+        setFilteredCases(filteredCases.filter((c) => c._id !== id));
+        setSelectedCases(selectedCases.filter((c) => c !== id));
+        setError(null);
+        toast.success('تم حذف القضية بنجاح');
+      } catch (error) {
+        setError('فشل حذف القضية');
+        toast.error('فشل حذف القضية');
+      }
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (window.confirm('هل أنت متأكد من حذف القضايا المحددة؟')) {
+      try {
+        await Promise.all(
+          selectedCases.map((id) =>
+            axios.delete(`${API_URL}/${id}`, {
+              headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+            })
+          )
+        );
+        setCases(cases.filter((c) => !selectedCases.includes(c._id)));
+        setFilteredCases(filteredCases.filter((c) => !selectedCases.includes(c._id)));
+        setSelectedCases([]);
+        setError(null);
+        toast.success('تم حذف القضايا المحددة بنجاح');
+      } catch (error) {
+        setError('فشل حذف القضايا');
+        toast.error('فشل حذف القضايا');
+      }
+    }
   };
 
   const handleExport = () => {
     const csvContent = [
-      headers.map(h => h.label).join(','),
-      ...selectedData.map(row =>
+      'العنوان,الوصف,الحالة,المحامي,العميل,الخصم,تاريخ الإنشاء,عدد المرفقات',
+      ...cases.map((row) =>
         [
-          row.caseNumber,
-          row.title,
-          row.client,
-          row.opponent,
-          row.status.text,
-          row.totalAmount,
+          row.titre,
+          row.description,
+          statutDisplay[row.statut] || row.statut,
+          `${row.avocat_id?.nom || ''} ${row.avocat_id?.prenom || ''}`,
+          row.client_id?.nom || '',
+          row.adversaire || '',
+          new Date(row.date_creation).toLocaleDateString('ar-EG'),
+          row.attachments ? row.attachments.length : 0,
         ].join(',')
       ),
     ].join('\n');
@@ -726,436 +1619,882 @@ function LegalCaseManagement() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `cases_${filters.date}.csv`);
+    link.setAttribute('download', 'cases.csv');
     link.click();
     URL.revokeObjectURL(url);
   };
 
-  const handleCheckboxChange = (caseNumber) => {
-    setSelectedCases(prev =>
-      prev.includes(caseNumber)
-        ? prev.filter(id => id !== caseNumber)
-        : [...prev, caseNumber]
-    );
+  const handleSort = (key) => {
+    const direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    setSortConfig({ key, direction });
+    const sorted = [...filteredCases].sort((a, b) => {
+      let aValue = a[key];
+      let bValue = b[key];
+      if (key === 'avocat_id') {
+        aValue = `${a.avocat_id?.nom || ''} ${a.avocat_id?.prenom || ''}`;
+        bValue = `${b.avocat_id?.nom || ''} ${b.avocat_id?.prenom || ''}`;
+      } else if (key === 'type_id') {
+        aValue = a.type_id?.name || '';
+        bValue = b.type_id?.name || '';
+      } else if (key === 'client_id') {
+        aValue = a.client_id?.nom || '';
+        bValue = b.client_id?.nom || '';
+      } else if (key === 'adversaire') {
+        aValue = a.adversaire || '';
+        bValue = b.adversaire || '';
+      } else if (key === 'date_creation') {
+        aValue = new Date(aValue);
+        bValue = new Date(bValue);
+      }
+      if (typeof aValue === 'string' && key !== 'date_creation') {
+        return direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      }
+      return direction === 'asc' ? aValue - bValue : bValue - aValue;
+    });
+    setFilteredCases(sorted);
   };
 
-  const handleBulkDelete = () => {
-    console.log('Deleting cases:', selectedCases);
-    setCases(prev => prev.filter(c => !selectedCases.includes(c.caseNumber)));
-    setSelectedCases([]);
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setAttachmentFiles(files);
   };
 
-  const handleModalOpen = () => {
-    setIsModalOpen(true);
+  const handleAttachmentsModal = (caseItem) => {
+    setSelectedCase(caseItem);
+    setAttachmentFiles([]);
+    setShowAttachmentsModal(true);
   };
 
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setNewCase({
-      caseNumber: '',
-      title: '',
-      client: '',
-      opponent: '',
-      status: 'قيد التقدم',
-      totalAmount: 0,
+  const handleAddAttachments = async (e) => {
+    e.preventDefault();
+    if (attachmentFiles.length === 0) {
+      setError('يرجى اختيار ملفات لإضافتها');
+      toast.error('يرجى اختيار ملفات لإضافتها');
+      return;
+    }
+    const submitData = new FormData();
+    attachmentFiles.forEach((file) => {
+      submitData.append('attachments', file);
+    });
+    try {
+      const response = await axios.put(`${API_URL}/${selectedCase._id}`, submitData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      setCases(cases.map((c) => (c._id === selectedCase._id ? response.data : c)));
+      setFilteredCases(filteredCases.map((c) => (c._id === selectedCase._id ? response.data : c)));
+      setShowAttachmentsModal(false);
+      setAttachmentFiles([]);
+      setError(null);
+      toast.success('تم إضافة المرفقات بنجاح');
+    } catch (error) {
+      setError(error.response?.data?.message || 'حدث خطأ أثناء إضافة المرفقات');
+      toast.error(error.response?.data?.message || 'حدث خطأ أثناء إضافة المرفقات');
+    }
+  };
+
+  const handleDownloadAttachment = async (filePath) => {
+    if (typeof filePath !== 'string') {
+      console.error('Invalid filePath:', filePath);
+      setError('مسار الملف غير صالح');
+      toast.error('مسار الملف غير صالح');
+      return;
+    }
+    try {
+      const encodedFilePath = encodeURIComponent(filePath);
+      const response = await axios.get(`http://localhost:5000/api/affaires/download/${encodedFilePath}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filePath.split('/').pop());
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      setError('فشل تحميل الملف');
+      toast.error('فشل تحميل الملف');
+    }
+  };
+
+  const getFileName = (filePath) => {
+    if (typeof filePath === 'string') {
+      return filePath.split('/').pop() || 'ملف غير صالح';
+    }
+    return 'ملف غير صالح';
+  };
+
+  const selectClient = (client) => {
+    setFormData({
+      ...formData,
+      client_id: client._id,
+      client_name: client.nom,
+    });
+    setShowClientSuggestions(false);
+  };
+
+  const handleClientInputChange = (e) => {
+    setFormData({
+      ...formData,
+      client_name: e.target.value,
+      client_id: '', // Reset client_id until a suggestion is selected
     });
   };
 
-  const handleNewCaseChange = (e) => {
-    const { name, value } = e.target;
-    setNewCase(prev => ({
-      ...prev,
-      [name]: name === 'totalAmount' ? parseFloat(value) || 0 : value,
-    }));
+  const handleClientFocus = () => {
+    if (formData.client_name || filteredClients.length > 0) {
+      setShowClientSuggestions(true);
+    }
   };
 
-  const handleAddCase = (e) => {
-    e.preventDefault();
-    const newCaseData = {
-      caseNumber: newCase.caseNumber,
-      title: newCase.title,
-      client: newCase.client,
-      opponent: newCase.opponent,
-      status: {
-        text: newCase.status,
-        color: newCase.status === 'قيد التقدم'
-          ? "background: #fefcbf; color: #f39c12;"
-          : newCase.status === 'معلق'
-          ? "background: #fee2e2; color: #e53e3e;"
-          : "background: #d1fae5; color: #2e7d32;",
-      },
-      totalAmount: newCase.totalAmount,
-    };
-    setCases(prev => [...prev, newCaseData]);
-    handleModalClose();
+  const handleClientBlur = () => {
+    setTimeout(() => setShowClientSuggestions(false), 200);
   };
 
-  const toggleFilterDropdown = () => {
-    setIsFilterDropdownOpen(prev => !prev);
+  const totalPages = Math.ceil(filteredCases.length / casesPerPage);
+  const paginatedCases = filteredCases.slice(
+    (currentPage - 1) * casesPerPage,
+    currentPage * casesPerPage
+  );
+
+  const summary = {
+    total: cases.length,
+    inProgress: cases.filter((c) => c.statut === 'en cours').length,
+    closed: cases.filter((c) => c.statut === 'terminée').length,
   };
 
-  const selectFilterType = (type) => {
-    setFilterType(type);
-    setFilters({ status: '', type: '', date: '2025-04-16' }); // Reset filters
-    setIsFilterDropdownOpen(false);
-  };
+  if (loading || loadingClients) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
 
   return (
-    <LegalCaseContainer>
-      <NavDash />
-      <Sidebar />
-      <MainContent>
-        {/* Header Section */}
-        <HeaderSection>
-          <Title>إدارة القضايا القانونية</Title>
-          <ButtonGroup>
-            {selectedCases.length > 0 && (
-              <DeleteButton
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleBulkDelete}
-              >
-                <FaTrash /> حذف المحدد ({selectedCases.length})
-              </DeleteButton>
-            )}
-            <ActionButton
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+    <div className="flex min-h-screen bg-gray-50 font-sans">
+      <NavDash setToken={setToken} />
+      <Sidebar setToken={setToken} />
+      <div className="flex-1 p-6 md:p-8 md:mt-16 sm:mr-16" dir="rtl">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">
+            إدارة القضايا القانونية
+          </h1>
+          <div className="flex items-center gap-3">
+            <button
               onClick={handleExport}
+              className="flex items-center gap-2 px-4 py-2 bg-green-700 text-white rounded-lg shadow-sm hover:bg-green-700 transition-all duration-300 text-sm"
             >
-              <FaDownload /> تصدير
-            </ActionButton>
-            <ActionButton
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleModalOpen}
+              <Download className="h-4 w-4" /> تصدير
+            </button>
+            <button
+              onClick={() => setShowFormModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-green-700 text-white rounded-lg shadow-sm hover:bg-green-700 transition-all duration-300 text-sm"
             >
-              + قضية جديدة
-            </ActionButton>
-          </ButtonGroup>
-        </HeaderSection>
+              <Plus className="h-4 w-4" /> إضافة قضية
+            </button>
+          </div>
+        </div>
 
-        {/* Enhanced Summary Card */}
-        <SummaryCard>
-          <SummaryItem
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.3 }}
+        {/* Stats Section */}
+        <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="bg-white p-5 rounded-xl shadow-lg border border-gray-100 flex items-center gap-4"
           >
-            <SummaryIcon color="#2e7d32">
-              <FaFolder />
-            </SummaryIcon>
-            <SummaryTitle>إجمالي القضايا</SummaryTitle>
-            <SummaryValue>{summary.total}</SummaryValue>
-          </SummaryItem>
-          <SummaryItem
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.3 }}
+            <div className="p-3 bg-green-100 rounded-full">
+              <FileText className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">إجمالي القضايا</p>
+              <p className="text-2xl font-bold text-gray-800">{summary.total}</p>
+            </div>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="bg-white p-5 rounded-xl shadow-lg border border-gray-100 flex items-center gap-4"
           >
-            <SummaryIcon color="#f39c12">
-              <FaHourglassHalf />
-            </SummaryIcon>
-            <SummaryTitle>قيد التقدم</SummaryTitle>
-            <SummaryValue type="inProgress">{summary.inProgress}</SummaryValue>
-          </SummaryItem>
-          <SummaryItem
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.3 }}
+            <div className="p-3 bg-yellow-100 rounded-full">
+              <Calendar className="h-6 w-6 text-yellow-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">القضايا الجارية</p>
+              <p className="text-2xl font-bold text-gray-800">{summary.inProgress}</p>
+            </div>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="bg-white p-5 rounded-xl shadow-lg border border-gray-100 flex items-center gap-4"
           >
-            <SummaryIcon color="#e53e3e">
-              <FaPauseCircle />
-            </SummaryIcon>
-            <SummaryTitle>معلق</SummaryTitle>
-            <SummaryValue type="pending">{summary.pending}</SummaryValue>
-          </SummaryItem>
-          <SummaryItem
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.3 }}
-          >
-            <SummaryIcon color="#2e7d32">
-              <FaCheckCircle />
-            </SummaryIcon>
-            <SummaryTitle>مغلق</SummaryTitle>
-            <SummaryValue type="closed">{summary.closed}</SummaryValue>
-          </SummaryItem>
-        </SummaryCard>
+            <div className="p-3 bg-blue-100 rounded-full">
+              <User className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">القضايا المنتهية</p>
+              <p className="text-2xl font-bold text-gray-800">{summary.closed}</p>
+            </div>
+          </motion.div>
+        </div>
 
-        {/* Unified Filter Section */}
-        <FilterSection
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+        {/* Filter Section */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-md border border-gray-100">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  handleFilter();
+                }}
+                placeholder="البحث حسب العنوان أو الوصف أو العميل أو الخصم..."
+                className="w-full px-4 py-2 pl-10 bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 transition-all duration-300 text-gray-700 placeholder-gray-400 text-sm"
+              />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            </div>
+            <select
+              value={filterStatus}
+              onChange={(e) => {
+                setFilterStatus(e.target.value);
+                handleFilter();
+              }}
+              className="w-full sm:w-48 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 transition-all duration-300 text-gray-700 text-sm"
+            >
+              <option value="">جميع الحالات</option>
+              <option value="en cours">جارية</option>
+              <option value="terminée">منتهية</option>
+            </select>
+            <input
+              type="date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              onBlur={handleFilter}
+              className="w-full sm:w-48 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 transition-all duration-300 text-gray-700 text-sm"
+            />
+          </div>
+          <div className="flex items-center gap-3 mt-4 sm:mt-0">
+            {selectedCases.length > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg shadow-sm hover:bg-red-700 transition-all duration-300 text-sm"
+              >
+                <FaTrash className="h-4 w-4" /> حذف المحدد ({selectedCases.length})
+              </button>
+            )}
+          </div>
+        </div>
+
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-red-50 text-red-800 rounded-lg shadow-sm flex justify-between items-center border border-red-200"
+          >
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="text-red-600 hover:text-red-700">
+              <X className="h-5 w-5" />
+            </button>
+          </motion.div>
+        )}
+
+        {/* Add/Edit Case Modal */}
+        <AnimatePresence>
+          {showFormModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+              onClick={() => setShowFormModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    {editingId ? 'تعديل القضية' : 'إضافة قضية جديدة'}
+                  </h2>
+                  <button
+                    onClick={() => {
+                      setShowFormModal(false);
+                      setEditingId(null);
+                      setFormData({
+                        titre: '',
+                        description: '',
+                        type_id: '',
+                        avocat_id: '',
+                        client_id: '',
+                        client_name: '',
+                        adversaire: '',
+                        statut: 'en cours',
+                        attachments: [],
+                      });
+                      setAttachmentFiles([]);
+                    }}
+                    className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                <form onSubmit={handleSubmit}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Left Column */}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">العنوان</label>
+                        <input
+                          type="text"
+                          value={formData.titre}
+                          onChange={(e) => setFormData({ ...formData, titre: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">الوصف</label>
+                        <textarea
+                          value={formData.description}
+                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm resize-none h-24"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">العميل</label>
+                        {loadingClients ? (
+                          <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 animate-pulse text-sm">
+                            جاري تحميل العملاء...
+                          </div>
+                        ) : (
+                          <AutocompleteContainer>
+                            <AutocompleteInput
+                              type="text"
+                              value={formData.client_name}
+                              onChange={handleClientInputChange}
+                              onFocus={handleClientFocus}
+                              onBlur={handleClientBlur}
+                              placeholder="ابحث عن العميل..."
+                              ref={clientInputRef}
+                              required
+                            />
+                            {showClientSuggestions && (
+                              <AutocompleteList>
+                                {filteredClients.map((client) => (
+                                  <AutocompleteItem
+                                    key={client._id}
+                                    onClick={() => selectClient(client)}
+                                  >
+                                    {client.nom}
+                                  </AutocompleteItem>
+                                ))}
+                              </AutocompleteList>
+                            )}
+                          </AutocompleteContainer>
+                        )}
+                        <ManageClientsButton
+                          type="button"
+                          onClick={() => navigate('/client-management')}
+                        >
+                          إدارة العملاء
+                        </ManageClientsButton>
+                      </div>
+                    </div>
+                    {/* Right Column */}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">النوع</label>
+                        {loadingTypes ? (
+                          <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 animate-pulse text-sm">
+                            جاري تحميل الأنواع...
+                          </div>
+                        ) : (
+                          <select
+                            value={formData.type_id}
+                            onChange={(e) => setFormData({ ...formData, type_id: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm"
+                            required
+                          >
+                            <option value="" disabled>
+                              اختر النوع
+                            </option>
+                            {types.map((type) => (
+                              <option key={type._id} value={type._id}>
+                                {type.name || type._id}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">الخصم</label>
+                        <input
+                          type="text"
+                          value={formData.adversaire}
+                          onChange={(e) => setFormData({ ...formData, adversaire: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">الحالة</label>
+                        <select
+                          value={formData.statut}
+                          onChange={(e) => setFormData({ ...formData, statut: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm"
+                          required
+                        >
+                          <option value="en cours">جارية</option>
+                          <option value="terminée">منتهية</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">المرفقات</label>
+                        <input
+                          type="file"
+                          multiple
+                          onChange={handleFileChange}
+                          accept="image/*,application/pdf,.doc,.docx"
+                          className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                        />
+                        {attachmentFiles.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {attachmentFiles.map((file, index) => (
+                              <span key={index} className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                                {file.name}
+                                <button
+                                  type="button"
+                                  onClick={() => setAttachmentFiles(attachmentFiles.filter((_, i) => i !== index))}
+                                  className="ml-2 text-red-600 hover:text-red-700"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {editingId && formData.attachments.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {formData.attachments.map((filePath, index) => (
+                              <span key={index} className="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
+                                {getFileName(filePath)}
+                                <button
+                                  type="button"
+                                  onClick={() => handleDownloadAttachment(filePath)}
+                                  className="ml-2 text-blue-600 hover:text-blue-700"
+                                >
+                                  <DownloadIcon className="h-4 w-4" />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-6 flex justify-end gap-3">
+                    <button
+                      type="submit"
+                      className="flex items-center gap-2 px-4 py-2 bg-green-700 text-white rounded-lg shadow-sm hover:bg-green-700 transition-all duration-300 text-sm"
+                    >
+                      {editingId ? 'تعديل القضية' : 'إضافة القضية'}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mt-8 bg-white rounded-xl shadow-lg border border-gray-100 overflow-x-auto"
         >
-          <FilterWrapper>
-            <FilterIconWrapper>
-              <FilterIcon onClick={toggleFilterDropdown}>
-                <FaFilter />
-              </FilterIcon>
-              {isFilterDropdownOpen && (
-                <FilterDropdown
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <FilterOption onClick={() => selectFilterType('type')}>
-                    العنوان
-                  </FilterOption>
-                  <FilterOption onClick={() => selectFilterType('status')}>
-                    الحالة
-                  </FilterOption>
-                  <FilterOption onClick={() => selectFilterType('date')}>
-                    التاريخ
-                  </FilterOption>
-                </FilterDropdown>
-              )}
-            </FilterIconWrapper>
-            <FilterInputWrapper>
-              {filterType === 'type' && (
-                <FilterInput
-                  type="text"
-                  placeholder="ابحث حسب العنوان..."
-                  name="type"
-                  value={filters.type}
-                  onChange={handleFilterChange}
-                />
-              )}
-              {filterType === 'status' && (
-                <FilterSelect name="status" value={filters.status} onChange={handleFilterChange}>
-                  <option value="">الكل</option>
-                  <option value="قيد التقدم">قيد التقدم</option>
-                  <option value="معلق">معلق</option>
-                  <option value="مغلق">مغلق</option>
-                </FilterSelect>
-              )}
-              {filterType === 'date' && (
-                <FilterInput
-                  type="date"
-                  name="date"
-                  value={filters.date}
-                  onChange={handleDateChange}
-                  min="2025-04-16"
-                  max="2025-04-20"
-                />
-              )}
-            </FilterInputWrapper>
-          </FilterWrapper>
-        </FilterSection>
-
-        {/* Cases Table */}
-        <CasesTable>
-          <TableWrapper>
-            <thead>
+          <table className="w-full">
+            <thead className="bg-gray-50">
               <tr>
-                {headers.map((header) => (
-                  <TableHeader key={header.label} onClick={() => header.key && handleSort(header.key)}>
-                    {header.label}
-                    {sortConfig.key === header.key && (
-                      <SortArrow>{sortConfig.direction === 'asc' ? '↑' : '↓'}</SortArrow>
-                    )}
-                  </TableHeader>
-                ))}
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <input
+                    type="checkbox"
+                    onChange={(e) =>
+                      setSelectedCases(e.target.checked ? cases.map((c) => c._id) : [])
+                    }
+                    checked={selectedCases.length === cases.length && cases.length > 0}
+                    className="accent-green-600 rounded"
+                  />
+                </th>
+                <th
+                  className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort('titre')}
+                >
+                  العنوان {sortConfig.key === 'titre' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  الوصف
+                </th>
+                <th
+                  className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort('type_id')}
+                >
+                  النوع {sortConfig.key === 'type_id' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th
+                  className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort('client_id')}
+                >
+                  العميل {sortConfig.key === 'client_id' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th
+                  className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort('adversaire')}
+                >
+                  الخصم {sortConfig.key === 'adversaire' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  الحالة
+                </th>
+                <th
+                  className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort('date_creation')}
+                >
+                  تاريخ الإنشاء {sortConfig.key === 'date_creation' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  المرفقات
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  الإجراءات
+                </th>
               </tr>
             </thead>
-            <tbody>
-              {paginatedCases.map((row) => (
-                <TableRow
-                  key={row.caseNumber}
-                  whileHover={{ scale: 1.005 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <TableCell>
-                    <Checkbox
-                      type="checkbox"
-                      checked={selectedCases.includes(row.caseNumber)}
-                      onChange={() => handleCheckboxChange(row.caseNumber)}
-                    />
-                  </TableCell>
-                  <TableCell>{row.caseNumber}</TableCell>
-                  <TableCell>{row.title}</TableCell>
-                  <TableCell>{row.client}</TableCell>
-                  <TableCell>{row.opponent}</TableCell>
-                  <TableCell>
-                    <StatusBadge color={row.status.color}>{row.status.text}</StatusBadge>
-                  </TableCell>
-                  <TableCell>{row.totalAmount.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <ActionIcons>
-                      <ActionIcon
-                        bgColor="#2e7d32"
-                        hoverColor="rgb(17, 91, 48)"
-                        onClick={() => console.log('View:', row)}
-                        title="عرض"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+            <tbody className="divide-y divide-gray-100">
+              <AnimatePresence>
+                {paginatedCases.map((caseItem) => (
+                  <motion.tr
+                    key={caseItem._id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="hover:bg-gray-50 transition-all duration-200"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={selectedCases.includes(caseItem._id)}
+                        onChange={() =>
+                          setSelectedCases(
+                            selectedCases.includes(caseItem._id)
+                              ? selectedCases.filter((id) => id !== caseItem._id)
+                              : [...selectedCases, caseItem._id]
+                          )
+                        }
+                        className="accent-green-600 rounded"
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-800 font-medium text-sm">
+                      {caseItem.titre}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 text-sm line-clamp-2">{caseItem.description}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
+                      {caseItem.type_id?.name || 'غير محدد'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
+                      {caseItem.client_id?.nom || 'غير محدد'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
+                      {caseItem.adversaire || 'غير محدد'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          caseItem.statut === 'en cours'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
                       >
-                        <FaEye />
-                      </ActionIcon>
-                      <ActionIcon
-                        bgColor="#2e7d32"
-                        hoverColor="rgb(17, 91, 48)"
-                        onClick={() => console.log('Edit:', row)}
-                        title="تعديل"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                        {statutDisplay[caseItem.statut] || caseItem.statut}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
+                      {new Date(caseItem.date_creation).toLocaleDateString('ar-EG')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
+                      <button
+                        onClick={() => handleAttachmentsModal(caseItem)}
+                        className="flex items-center gap-1 text-blue-600 hover:text-blue-700 transition-colors duration-200"
                       >
-                        <FaEdit />
-                      </ActionIcon>
-                      <ActionIcon
-                        bgColor="#e53e3e"
-                        hoverColor="#c53030"
-                        onClick={() => console.log('Delete:', row)}
-                        title="حذف"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        <FaTrash />
-                      </ActionIcon>
-                    </ActionIcons>
-                  </TableCell>
-                </TableRow>
-              ))}
+                        <Paperclip className="h-5 w-5" />
+                        ({caseItem.attachments ? caseItem.attachments.length : 0})
+                      </button>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex gap-2">
+                        <ActionIcon
+                          bgColor="#3b82f6"
+                          hoverColor="#2563eb"
+                          title="عرض"
+                          onClick={() => {
+                            setSelectedCase(caseItem);
+                            setShowDetailsModal(true);
+                          }}
+                        >
+                          <FaEye className="h-3 w-3" />
+                        </ActionIcon>
+                        <ActionIcon
+                          bgColor={theme.primary}
+                          hoverColor={theme.primaryDark}
+                          title="تعديل"
+                          onClick={() => handleEdit(caseItem)}
+                        >
+                          <FaEdit className="h-3 w-3" />
+                        </ActionIcon>
+                        <ActionIcon
+                          bgColor={theme.error}
+                          hoverColor="#dc2626"
+                          title="حذف"
+                          onClick={() => handleDelete(caseItem._id)}
+                        >
+                          <FaTrash className="h-3 w-3" />
+                        </ActionIcon>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
             </tbody>
-          </TableWrapper>
-        </CasesTable>
+          </table>
+          {paginatedCases.length === 0 && (
+            <div className="text-center text-gray-500 p-6">لا توجد قضايا متاحة</div>
+          )}
+        </motion.div>
 
-        {/* Pagination */}
-        <Pagination>
-          <PageButton
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+        <div className="flex justify-center gap-2 mt-6">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
+            className="px-4 py-2 bg-white border border-gray-200 text-gray-800 rounded-lg shadow-sm hover:bg-gray-100 transition-all duration-300 disabled:opacity-50 text-sm"
           >
             السابق
-          </PageButton>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-            <PageButton
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
               key={page}
-              active={currentPage === page}
               onClick={() => setCurrentPage(page)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className={`px-4 py-2 rounded-lg shadow-sm transition-all duration-300 text-sm ${
+                currentPage === page
+                  ? 'bg-green-600 text-white'
+                  : 'bg-white border border-gray-200 text-gray-800 hover:bg-gray-100'
+              }`}
             >
               {page}
-            </PageButton>
+            </button>
           ))}
-          <PageButton
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-white border border-gray-200 text-gray-800 rounded-lg shadow-sm hover:bg-gray-100 transition-all duration-300 disabled:opacity-50 text-sm"
           >
             التالي
-          </PageButton>
-        </Pagination>
+          </button>
+        </div>
 
-        {/* Add Case Modal */}
-        {isModalOpen && (
-          <ModalOverlay>
-            <ModalContent
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
+        {/* Details Modal */}
+        <AnimatePresence>
+          {showDetailsModal && selectedCase && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+              onClick={() => setShowDetailsModal(false)}
             >
-              <ModalHeader>
-                <ModalTitle>إضافة قضية جديدة</ModalTitle>
-                <CloseButton
-                  onClick={handleModalClose}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <FaTimes />
-                </CloseButton>
-              </ModalHeader>
-              <ModalForm onSubmit={handleAddCase}>
-                <div>
-                  <FormField>
-                    <FormLabel>رقم القضية</FormLabel>
-                    <FormInput
-                      type="text"
-                      name="caseNumber"
-                      value={newCase.caseNumber}
-                      onChange={handleNewCaseChange}
-                      required
-                    />
-                  </FormField>
-                  <FormField>
-                    <FormLabel>العنوان</FormLabel>
-                    <FormSelect
-                      name="title"
-                      value={newCase.title}
-                      onChange={handleNewCaseChange}
-                      required
-                    >
-                      <option value="">اختر العنوان</option>
-                      <option value="طلاق">طلاق</option>
-                      <option value="عقد">عقد</option>
-                      <option value="دعوى قضائية">دعوى قضائية</option>
-                      <option value="نزاع تجاري">نزاع تجاري</option>
-                      <option value="إرث">إرث</option>
-                      <option value="عمالية">عمالية</option>
-                      <option value="دعوى إدارية">دعوى إدارية</option>
-                    </FormSelect>
-                  </FormField>
-                  <FormField>
-                    <FormLabel>العميل</FormLabel>
-                    <FormInput
-                      type="text"
-                      name="client"
-                      value={newCase.client}
-                      onChange={handleNewCaseChange}
-                      required
-                    />
-                  </FormField>
-                  <FormField>
-                    <FormLabel>الخصم</FormLabel>
-                    <FormInput
-                      type="text"
-                      name="opponent"
-                      value={newCase.opponent}
-                      onChange={handleNewCaseChange}
-                      required
-                    />
-                  </FormField>
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">تفاصيل القضية</h2>
+                  <button
+                    onClick={() => setShowDetailsModal(false)}
+                    className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
                 </div>
-                <div>
-                  <FormField>
-                    <FormLabel>الحالة</FormLabel>
-                    <FormSelect
-                      name="status"
-                      value={newCase.status}
-                      onChange={handleNewCaseChange}
-                      required
-                    >
-                      <option value="قيد التقدم">قيد التقدم</option>
-                      <option value="معلق">معلق</option>
-                      <option value="مغلق">مغلق</option>
-                    </FormSelect>
-                  </FormField>
-                  <FormField>
-                    <FormLabel>الإجمالي (MAD)</FormLabel>
-                    <FormInput
-                      type="number"
-                      name="totalAmount"
-                      value={newCase.totalAmount}
-                      onChange={handleNewCaseChange}
-                      required
-                    />
-                  </FormField>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Left Column */}
+                  <div className="space-y-4">
+                    <div>
+                      <span className="font-semibold text-gray-700">العنوان:</span>
+                      <p className="mt-1 text-gray-600">{selectedCase.titre}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-700">الوصف:</span>
+                      <p className="mt-1 text-gray-600">{selectedCase.description}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-700">النوع:</span>
+                      <p className="mt-1 text-gray-600">{selectedCase.type_id?.name || 'غير محدد'}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-700">الحالة:</span>
+                      <p className="mt-1 text-gray-600">{statutDisplay[selectedCase.statut] || selectedCase.statut}</p>
+                    </div>
+                  </div>
+                  {/* Right Column */}
+                  <div className="space-y-4">
+                    <div>
+                      <span className="font-semibold text-gray-700">العميل:</span>
+                      <p className="mt-1 text-gray-600">{selectedCase.client_id?.nom || 'غير محدد'}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-700">الخصم:</span>
+                      <p className="mt-1 text-gray-600">{selectedCase.adversaire || 'غير محدد'}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-700">المحامي:</span>
+                      <p className="mt-1 text-gray-600">
+                        {selectedCase.avocat_id ? `${selectedCase.avocat_id.nom} ${selectedCase.avocat_id.prenom}` : 'غير محدد'}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-700">تاريخ الإنشاء:</span>
+                      <p className="mt-1 text-gray-600">{new Date(selectedCase.date_creation).toLocaleDateString('ar-EG')}</p>
+                    </div>
+                  </div>
                 </div>
-                <SubmitButton
-                  type="submit"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  إضافة القضية
-                </SubmitButton>
-              </ModalForm>
-            </ModalContent>
-          </ModalOverlay>
-        )}
-      </MainContent>
-    </LegalCaseContainer>
+                {/* Attachments Section (Full Width) */}
+                <div className="mt-6">
+                  <span className="font-semibold text-gray-700">المرفقات:</span>
+                  {selectedCase.attachments && selectedCase.attachments.length > 0 ? (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {selectedCase.attachments.map((filePath, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleDownloadAttachment(filePath)}
+                          className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm hover:bg-blue-200 transition-colors duration-200"
+                        >
+                          {getFileName(filePath)}
+                          <DownloadIcon className="h-4 w-4 ml-2" />
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-1 text-gray-600">لا توجد مرفقات</p>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Attachments Modal */}
+        <AnimatePresence>
+          {showAttachmentsModal && selectedCase && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+              onClick={() => setShowAttachmentsModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white rounded-xl p-8 max-w-lg w-full mx-4 shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">إدارة المرفقات</h2>
+                  <button
+                    onClick={() => setShowAttachmentsModal(false)}
+                    className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <span className="font-semibold text-gray-700">المرفقات الحالية:</span>
+                    {selectedCase.attachments && selectedCase.attachments.length > 0 ? (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {selectedCase.attachments.map((filePath, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleDownloadAttachment(filePath)}
+                            className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm hover:bg-blue-200 transition-colors duration-200"
+                          >
+                            {getFileName(filePath)}
+                            <DownloadIcon className="h-4 w-4 ml-2" />
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mt-1 text-gray-600">لا توجد مرفقات</p>
+                    )}
+                  </div>
+                  <form onSubmit={handleAddAttachments}>
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">إضافة مرفقات جديدة:</label>
+                      <input
+                        type="file"
+                        multiple
+                        onChange={handleFileChange}
+                        accept="image/*,application/pdf,.doc,.docx"
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600 bg-white text-gray-700 transition-all duration-200 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                      />
+                      {attachmentFiles.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {attachmentFiles.map((file, index) => (
+                            <span key={index} className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                              {file.name}
+                              <button
+                                type="button"
+                                onClick={() => setAttachmentFiles(attachmentFiles.filter((_, i) => i !== index))}
+                                className="ml-2 text-red-600 hover:text-red-700"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-6 flex justify-end gap-3">
+                      <button
+                        type="submit"
+                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg shadow-sm hover:bg-green-700 transition-all duration-300 text-sm"
+                      >
+                        إضافة المرفقات
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Toast Container */}
+        <Toaster position="top-right" reverseOrder={false} />
+      </div>
+    </div>
   );
-}
+};
 
 export default LegalCaseManagement;

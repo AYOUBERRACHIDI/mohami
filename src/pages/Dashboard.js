@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import Sidebar from '../components/Sidebar';
 import NavDash from '../components/NavDash';
-import { FaUserPlus, FaFileAlt, FaClock, FaCheckCircle } from 'react-icons/fa';
+import { FaUserPlus, FaFileAlt, FaClock, FaCheckCircle, FaEye, FaPencilAlt, FaTrash } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 // Keyframes for Animations
 const fadeIn = keyframes`
@@ -36,7 +38,6 @@ const MainContent = styled.div`
   }
 `;
 
-// Stat Cards Section
 const StatCardGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -77,7 +78,6 @@ const StatPercentage = styled.div`
   gap: 0.25rem;
 `;
 
-// Main Sections (Cases, Schedule, Quick Actions, Notifications, Activity Log)
 const MainGrid = styled.div`
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -131,7 +131,6 @@ const SubHeader = styled.h2`
   }
 `;
 
-// Cases Table Styling
 const CasesTable = styled.div`
   width: 100%;
   overflow-x: auto;
@@ -163,23 +162,34 @@ const TableCell = styled.td`
   color: #4b5563;
   text-align: right;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  &:last-child {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+  }
 `;
 
 const ActionButton = styled.button`
-  padding: 0.25rem 0.5rem;
-  margin-left: 0.25rem;
+  padding: 0.5rem;
   background: ${props => props.color || 'transparent'};
   color: #ffffff;
   border-radius: 0.25rem;
-  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
   transition: background 0.3s ease-in-out;
 
   &:hover {
     background: ${props => props.hoverColor || 'transparent'};
   }
+
+  svg {
+    font-size: 1rem;
+  }
 `;
 
-// Calendar Styling
 const CalendarWrapper = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -217,7 +227,6 @@ const CalendarDay = styled.div`
   }
 `;
 
-// Weekly Schedule Styling
 const ScheduleGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -257,7 +266,6 @@ const ScheduleBox = styled.div`
   }
 `;
 
-// Quick Actions Styling
 const QuickActionsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -281,7 +289,6 @@ const ActionButtonStyled = styled.button`
   }
 `;
 
-// Notifications Styling
 const NotificationList = styled.div`
   display: flex;
   flex-direction: column;
@@ -320,7 +327,6 @@ const DismissButton = styled.button`
   }
 `;
 
-// Recent Activity Log Styling
 const ActivityList = styled.div`
   display: flex;
   flex-direction: column;
@@ -335,7 +341,7 @@ const ActivityItem = styled.div`
   gap: 0.75rem;
   padding: 0.5rem;
   border-left: 3px solid #2e7d32;
-  background: rgba(255, 255,CHIP, 0.5);
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 0.25rem;
   font-size: 0.875rem;
   color: #4b5563;
@@ -368,29 +374,18 @@ const ActivityTimestamp = styled.div`
 `;
 
 function Dashboard() {
-  // State to track the selected date
-  const [selectedDate, setSelectedDate] = useState(16); // Default to April 16, 2025
+  const [selectedDate, setSelectedDate] = useState(16);
+  const [stats, setStats] = useState({
+    totalClients: 0,
+    totalSessions: 0,
+    totalCases: 0,
+    totalConsultations: 0,
+  });
+  const [latestCases, setLatestCases] = useState([]);
+  const navigate = useNavigate();
 
-  // Static Data for April 16, 2025
-  const dataApril16 = {
-    stats: {
-      totalClients: 85,
-      totalSessions: 720,
-      totalCases: 150,
-      totalConsultations: 45,
-    },
-    latestCases: [
-      { id: 1, clientName: "أحمد قبالي", classification: "مدنية", court: "محكمة الدار البيضاء" },
-      { id: 2, clientName: "مصطفى لاريك", classification: "تجارية", court: "محكمة الرباط" },
-      { id: 3, clientName: "محمد شراف", classification: "جنائية", court: "محكمة مراكش" },
-      { id: 4, clientName: "فاطمة الزهراء", classification: "أسرية", court: "محكمة فاس" },
-      { id: 5, clientName: "يوسف بنعيسى", classification: "إدارية", court: "محكمة طنجة" },
-      { id: 6, clientName: "خديجة العلوي", classification: "عمالية", court: "محكمة أكادير" },
-      { id: 7, clientName: "عبد الله السعدي", classification: "مدنية", court: "محكمة وجدة" },
-      { id: 8, clientName: "نور الدين المريني", classification: "تجارية", court: "محكمة مكناس" },
-      { id: 9, clientName: "رشيد الصغير", classification: "جنائية", court: "محكمة تطوان" },
-      { id: 10, clientName: "سلمى بنت محمد", classification: "أسرية", court: "محكمة الجديدة" },
-    ],
+  // Static data for schedule, notifications, and activity log
+  const staticData = {
     schedule: {
       lundi: [
         { time: "08:00", client: "حميد المرضي - جلسة", color: { bg: "#3b82f6", text: "#ffffff" } },
@@ -436,86 +431,100 @@ function Dashboard() {
     ],
   };
 
-  // Static Data for April 20, 2025
-  const dataApril20 = {
-    stats: {
-      totalClients: 87,
-      totalSessions: 725,
-      totalCases: 152,
-      totalConsultations: 47,
-    },
-    latestCases: [
-      { id: 11, clientName: "علي بن صالح", classification: "مدنية", court: "محكمة الدار البيضاء" },
-      { id: 12, clientName: "حنان الخطيب", classification: "تجارية", court: "محكمة الرباط" },
-      { id: 13, clientName: "إبراهيم العثماني", classification: "جنائية", court: "محكمة مراكش" },
-      { id: 14, clientName: "لطيفة الصغير", classification: "أسرية", court: "محكمة فاس" },
-      { id: 15, clientName: "خالد المغربي", classification: "إدارية", court: "محكمة طنجة" },
-      { id: 16, clientName: "سعاد بنت أحمد", classification: "عمالية", court: "محكمة أكادير" },
-      { id: 17, clientName: "محسن الراشدي", classification: "مدنية", court: "محكمة وجدة" },
-      { id: 18, clientName: "زكرياء العلوي", classification: "تجارية", court: "محكمة مكناس" },
-      { id: 19, clientName: "نبيلة الصغير", classification: "جنائية", court: "محكمة تطوان" },
-      { id: 20, clientName: "أمينة بنت يوسف", classification: "أسرية", court: "محكمة الجديدة" },
-    ],
-    schedule: {
-      lundi: [
-        { time: "09:00", client: "علي بن صالح - جلسة", color: { bg: "#3b82f6", text: "#ffffff" } },
-        { time: "13:00", client: "حنان الخطيب - استشارة", color: { bg: "#22c55e", text: "#ffffff" } },
-      ],
-      mardi: [
-        { time: "10:00", client: "إبراهيم العثماني - جلسة", color: { bg: "#a855f7", text: "#ffffff" } },
-        { time: "14:00", client: "لطيفة الصغير - استشارة", color: { bg: "#10b981", text: "#ffffff" } },
-        { time: "16:30", client: "خالد المغربي - جلسة", color: { bg: "#ef4444", text: "#ffffff" } },
-      ],
-      mercredi: [
-        { time: "08:30", client: "سعاد بنت أحمد - جلسة", color: { bg: "#f97316", text: "#ffffff" } },
-        { time: "12:00", client: "محسن الراشدي - استشارة", color: { bg: "#10b981", text: "#ffffff" } },
-      ],
-      jeudi: [
-        { time: "11:00", client: "زكرياء العلوي - جلسة", color: { bg: "#ef4444", text: "#ffffff" } },
-        { time: "15:00", client: "نبيلة الصغير - استشارة", color: { bg: "#22c55e", text: "#ffffff" } },
-        { time: "17:00", client: "أمينة بنت يوسف - جلسة", color: { bg: "#8b5cf6", text: "#ffffff" } },
-      ],
-      vendredi: [
-        { time: "09:30", client: "خالد المغربي - استشارة", color: { bg: "#8b5cf6", text: "#ffffff" } },
-        { time: "14:00", client: "علي بن صالح - جلسة", color: { bg: "#3b82f6", text: "#ffffff" } },
-      ],
-    },
-    notifications: [
-      { id: 8, message: "جلسة جديدة مع علي بن صالح في 09:00", timestamp: "2025-04-20 08:00" },
-      { id: 9, message: "تم تحديث القضية رقم 152", timestamp: "2025-04-20 07:30" },
-      { id: 10, message: "موعد استشارة مع حنان الخطيب اليوم 13:00", timestamp: "2025-04-20 06:45" },
-      { id: 11, message: "تم إغلاق القضية رقم 151", timestamp: "2025-04-19 15:00" },
-      { id: 12, message: "تمت إضافة عميل جديد: سعاد بنت أحمد", timestamp: "2025-04-19 13:00" },
-      { id: 13, message: "جلسة مع أمينة بنت يوسف في 17:00", timestamp: "2025-04-18 11:00" },
-      { id: 14, message: "تم تحديث القضية رقم 148", timestamp: "2025-04-18 09:30" },
-    ],
-    activityLog: [
-      { id: 8, action: "تمت إضافة عميل جديد: سعاد بنت أحمد", timestamp: "2025-04-20 09:00", icon: <FaUserPlus /> },
-      { id: 9, action: "تم تحديث القضية رقم 152", timestamp: "2025-04-20 07:30", icon: <FaFileAlt /> },
-      { id: 10, action: "جدولة جلسة مع أمينة بنت يوسف", timestamp: "2025-04-20 06:45", icon: <FaClock /> },
-      { id: 11, action: "تم إغلاق القضية رقم 151", timestamp: "2025-04-19 15:00", icon: <FaCheckCircle /> },
-      { id: 12, action: "تمت إضافة استشارة لنبيلة الصغير", timestamp: "2025-04-19 13:00", icon: <FaClock /> },
-      { id: 13, action: "تمت إضافة عميل جديد: زكرياء العلوي", timestamp: "2025-04-18 11:00", icon: <FaUserPlus /> },
-      { id: 14, action: "تم تحديث القضية رقم 148", timestamp: "2025-04-18 09:30", icon: <FaFileAlt /> },
-    ],
-  };
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          toast.error('يرجى تسجيل الدخول أولاً');
+          navigate('/login');
+          return;
+        }
 
-  // Select the data based on the selected date
-  const selectedData = selectedDate === 16 ? dataApril16 : dataApril20;
+        const response = await fetch('http://localhost:5000/api/affaires/stats', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error(`Fetch stats error: Status ${response.status}, Message: ${errorData.message || 'No error message'}`);
+          throw new Error(errorData.message || 'Failed to fetch stats');
+        }
+
+        const data = await response.json();
+        setStats(data);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+        toast.error('خطأ في جلب الإحصائيات: ' + error.message);
+        if (error.message.includes('Invalid token') || error.message.includes('No token provided') || error.message.includes('Unauthorized')) {
+          localStorage.removeItem('token');
+          navigate('/login');
+        }
+      }
+    };
+
+    const fetchCases = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          toast.error('يرجى تسجيل الدخول أولاً');
+          navigate('/login');
+          return;
+        }
+
+        const response = await fetch('http://localhost:5000/api/affaires', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error(`Fetch cases error: Status ${response.status}, Message: ${errorData.message || 'No error message'}`);
+          throw new Error(errorData.message || 'Failed to fetch cases');
+        }
+
+        const data = await response.json();
+        console.log('Fetched cases:', data);
+
+        const mappedCases = data.map((affaire, index) => ({
+          id: index + 1,
+          clientName: affaire.client_id ? `${affaire.client_id.nom || ''} ${affaire.client_id.prenom || ''}`.trim() : 'غير متوفر',
+          classification: affaire.type_id?.nom || 'غير محدد',
+          court: affaire.titre || 'غير متوفر',
+          _id: affaire._id, // Store _id for actions
+        }));
+        setLatestCases(mappedCases.slice(0, 10));
+        console.log('Mapped latestCases:', mappedCases);
+      } catch (error) {
+        console.error('Error fetching cases:', error);
+        toast.error('خطأ في جلب القضايا: ' + error.message);
+        if (error.message.includes('Invalid token') || error.message.includes('No token provided') || error.message.includes('Unauthorized')) {
+          localStorage.removeItem('token');
+          navigate('/login');
+        }
+      }
+    };
+
+    fetchStats();
+    fetchCases();
+  }, [navigate]);
 
   const caseHeaders = ['رقم', "اسم العميل", "التصنيف", "المحكمة", "إجراءات"];
 
-  // Calendar Data
-  const daysInMonth = new Date(2025, 4, 0).getDate(); // 30 days in April 2025
-  const firstDayOfMonth = new Date(2025, 3, 1).getDay(); // Tuesday (1)
+  const daysInMonth = new Date(2025, 4, 0).getDate();
+  const firstDayOfMonth = new Date(2025, 3, 1).getDay();
   const daysOfWeek = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
   const calendarDays = Array(firstDayOfMonth).fill(null).concat(
     Array.from({ length: daysInMonth }, (_, i) => i + 1)
   );
 
   const handleDismissNotification = (id) => {
-    const updatedNotifications = selectedData.notifications.filter(notification => notification.id !== id);
-    console.log(`Dismissed notification with id: ${id}`, updatedNotifications);
+    console.log(`Dismissed notification with id: ${id}`);
   };
 
   const handleDateClick = (day) => {
@@ -529,42 +538,39 @@ function Dashboard() {
       <NavDash />
       <Sidebar />
       <MainContent>
-        {/* Stat Cards Section */}
         <StatCardGrid>
           <StatCardWrapper>
             <StatTitle>إجمالي العملاء</StatTitle>
-            <StatValue>{selectedData.stats.totalClients}</StatValue>
+            <StatValue>{stats.totalClients}</StatValue>
             <StatPercentage isPositive={true}>
               <span>↑ 25%</span>
             </StatPercentage>
           </StatCardWrapper>
           <StatCardWrapper>
             <StatTitle>إجمالي الجلسات</StatTitle>
-            <StatValue>{selectedData.stats.totalSessions}</StatValue>
+            <StatValue>{stats.totalSessions}</StatValue>
             <StatPercentage isPositive={true}>
               <span>↑ 5%</span>
             </StatPercentage>
           </StatCardWrapper>
           <StatCardWrapper>
             <StatTitle>إجمالي القضايا</StatTitle>
-            <StatValue>{selectedData.stats.totalCases}</StatValue>
+            <StatValue>{stats.totalCases}</StatValue>
             <StatPercentage isPositive={true}>
               <span>↑ 5%</span>
             </StatPercentage>
           </StatCardWrapper>
           <StatCardWrapper>
             <StatTitle>إجمالي الاستشارات</StatTitle>
-            <StatValue>{selectedData.stats.totalConsultations}</StatValue>
+            <StatValue>{stats.totalConsultations}</StatValue>
             <StatPercentage isPositive={true}>
               <span>↑ 25%</span>
             </StatPercentage>
           </StatCardWrapper>
         </StatCardGrid>
 
-        {/* Main Sections */}
         <MainGrid>
           <LeftColumn>
-            {/* Latest Cases */}
             <Section>
               <SubHeader>أحدث القضايا</SubHeader>
               <CasesTable>
@@ -577,31 +583,51 @@ function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedData.latestCases.map((row) => (
-                      <TableRow key={row.id}>
-                        <TableCell>{row.id}</TableCell>
-                        <TableCell>{row.clientName}</TableCell>
-                        <TableCell>{row.classification}</TableCell>
-                        <TableCell>{row.court}</TableCell>
-                        <TableCell>
-                          <ActionButton color="#3b82f6" hoverColor="#2563eb" onClick={() => console.log('View:', row)}>
-                            عرض
-                          </ActionButton>
-                          <ActionButton color="#10b981" hoverColor="#059669" onClick={() => console.log('Edit:', row)}>
-                            تعديل
-                          </ActionButton>
-                          <ActionButton color="#ef4444" hoverColor="#dc2626" onClick={() => console.log('Delete:', row)}>
-                            حذف
-                          </ActionButton>
-                        </TableCell>
+                    {latestCases.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5}>لا توجد قضايا متاحة</TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      latestCases.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell>{row.id}</TableCell>
+                          <TableCell>{row.clientName}</TableCell>
+                          <TableCell>{row.classification}</TableCell>
+                          <TableCell>{row.court}</TableCell>
+                          <TableCell>
+                            <ActionButton
+                              color="#3b82f6"
+                              hoverColor="#2563eb"
+                              onClick={() => navigate('/legal-case-management')}
+                              title="عرض القضية"
+                            >
+                              <FaEye />
+                            </ActionButton>
+                            <ActionButton
+                              color="#10b981"
+                              hoverColor="#059669"
+                              onClick={() => navigate('/legal-case-management')}
+                              title="تعديل القضية"
+                            >
+                              <FaPencilAlt />
+                            </ActionButton>
+                            <ActionButton
+                              color="#ef4444"
+                              hoverColor="#dc2626"
+                              onClick={() => console.log('Delete:', row)}
+                              title="حذف القضية"
+                            >
+                              <FaTrash />
+                            </ActionButton>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </tbody>
                 </TableWrapper>
               </CasesTable>
             </Section>
 
-            {/* Quick Actions */}
             <Section>
               <SubHeader>إجراءات سريعة</SubHeader>
               <QuickActionsGrid>
@@ -620,11 +646,10 @@ function Dashboard() {
               </QuickActionsGrid>
             </Section>
 
-            {/* Recent Activity Log */}
             <Section>
               <SubHeader>سجل الأنشطة الأخيرة</SubHeader>
               <ActivityList>
-                {selectedData.activityLog.map((activity) => (
+                {staticData.activityLog.map((activity) => (
                   <ActivityItem key={activity.id}>
                     <ActivityIcon>{activity.icon}</ActivityIcon>
                     <ActivityContent>
@@ -638,10 +663,8 @@ function Dashboard() {
           </LeftColumn>
 
           <RightColumn>
-            {/* Calendar and Weekly Schedule */}
             <Section>
               <SubHeader>تخطيط الأسبوع</SubHeader>
-              {/* Calendar */}
               <CalendarHeader>أبريل 2025</CalendarHeader>
               <CalendarWrapper>
                 {daysOfWeek.map((day, index) => (
@@ -658,12 +681,11 @@ function Dashboard() {
                 ))}
               </CalendarWrapper>
 
-              {/* Weekly Schedule */}
               <ScheduleGrid>
                 {["الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"].map((day, index) => (
                   <DayColumn key={day}>
                     <DayHeader>{day}</DayHeader>
-                    {selectedData.schedule[Object.keys(selectedData.schedule)[index]].map((event, idx) => (
+                    {staticData.schedule[Object.keys(staticData.schedule)[index]].map((event, idx) => (
                       <ScheduleBox key={idx} bgColor={event.color.bg} textColor={event.color.text}>
                         <p>{event.time}</p>
                         <p>{event.client}</p>
@@ -674,11 +696,10 @@ function Dashboard() {
               </ScheduleGrid>
             </Section>
 
-            {/* Notifications */}
             <Section>
               <SubHeader>الإشعارات</SubHeader>
               <NotificationList>
-                {selectedData.notifications.map((notification) => (
+                {staticData.notifications.map((notification) => (
                   <NotificationItem key={notification.id}>
                     <div>
                       <p>{notification.message}</p>
